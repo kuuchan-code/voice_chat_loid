@@ -27,6 +27,10 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 
+# サーバーごとのキューを格納するための辞書
+guild_speech_queues = {}
+
+
 def fetch_speakers():
     """スピーカー情報を取得します。"""
     url = "http://127.0.0.1:50021/speakers"
@@ -124,8 +128,9 @@ async def text_to_speech(voice_client, text, speaker_id):
     await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
 
 
-async def process_speech_queue():
+async def process_speech_queue(guild_id):
     global current_voice_client
+    speech_queue = await get_guild_speech_queue(guild_id)
     while True:
         try:
             voice_client, text, style_id = await speech_queue.get()
@@ -136,6 +141,24 @@ async def process_speech_queue():
         finally:
             speech_queue.task_done()
             current_voice_client = None
+
+
+async def get_guild_speech_queue(guild_id):
+    """指定されたサーバーのキューを取得、存在しない場合は新しく作成します。"""
+    if guild_id not in guild_speech_queues:
+        guild_speech_queues[guild_id] = asyncio.Queue()
+    return guild_speech_queues[guild_id]
+
+
+async def clear_guild_speech_queue(guild_id):
+    """指定されたサーバーのキューをクリアします。"""
+    if guild_id in guild_speech_queues:
+        while not guild_speech_queues[guild_id].empty():
+            try:
+                guild_speech_queues[guild_id].get_nowait()
+            except asyncio.QueueEmpty:
+                continue
+            guild_speech_queues[guild_id].task_done()
 
 
 @bot.event
@@ -194,16 +217,6 @@ async def on_message(message):
     await speech_queue.put((voice_client, message.content, style_id))
 
 
-# キューをクリアするための関数
-async def clear_speech_queue():
-    while not speech_queue.empty():
-        try:
-            speech_queue.get_nowait()
-        except asyncio.QueueEmpty:
-            continue
-        speech_queue.task_done()
-
-
 @bot.command(name="clear", help="読み上げキューをクリアし、待機状態にします。")
 async def clear(ctx):
     global current_voice_client
@@ -212,8 +225,8 @@ async def clear(ctx):
     if current_voice_client and current_voice_client.is_playing():
         current_voice_client.stop()
 
-    # キューをクリアする
-    await clear_speech_queue()
+    guild_id = ctx.guild.id  # サーバーIDの取得
+    await clear_guild_speech_queue(guild_id)  # 対応するキューをクリア
 
     # ボットのステータスを更新する
     await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
@@ -261,9 +274,8 @@ async def on_voice_state_update(member, before, after):
             if current_voice_client and current_voice_client.is_playing():
                 current_voice_client.stop()
 
-            # キューをクリアする
-            await clear_speech_queue()
             server_id = str(member.guild.id)
+            await clear_guild_speech_queue(server_id)  # 対応するキューをクリア
             if (
                 server_id in speaker_settings
                 and "text_channel" in speaker_settings[server_id]
