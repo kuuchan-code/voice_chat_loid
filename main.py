@@ -208,35 +208,7 @@ async def on_message(message):
     await text_to_speech(voice_client, message.content, style_id, guild_id)
 
 
-async def clear_playback_queue(guild_id):
-    guild_queue = get_guild_playback_queue(guild_id)
-    while True:
-        try:
-            # 非同期にキューからアイテムを取得し、即座に処理を続行します。
-            item = await guild_queue.get()
-            guild_queue.task_done()
-        except asyncio.QueueEmpty:
-            # キューが空になった場合はループを抜けます。
-            break
 
-
-
-@bot.command(name="clear", help="読み上げキューをクリアし、待機状態にします。")
-async def clear(ctx):
-    guild_id = str(ctx.guild.id)
-
-    voice_client = ctx.guild.voice_client
-    if voice_client and voice_client.is_playing():
-        voice_client.stop()
-
-    # キューをクリアする
-    await clear_playback_queue(guild_id)
-
-    # ボットのステータスを更新する
-    await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
-
-    # ユーザーに通知する
-    await ctx.send("読み上げを停止し、キューをクリアしました。ボットは待機中です。")
 
 
 @bot.event
@@ -279,8 +251,6 @@ async def on_voice_state_update(member, before, after):
             if voice_client and voice_client.is_playing():
                 voice_client.stop()
 
-            # キューをクリアする
-            await clear_playback_queue(guild_id)
             if (
                 guild_id in speaker_settings
                 and "text_channel" in speaker_settings[guild_id]
