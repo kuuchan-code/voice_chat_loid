@@ -267,7 +267,9 @@ async def on_voice_state_update(member, before, after):
         notify_style_id = speaker_settings.get(str(member.guild.id), {}).get(
             "notify", NOTIFY_STYLE_ID
         )
-        await speech_queue.put((voice_client, message, notify_style_id))
+        guild_id = str(member.guild.id)  # ギルドIDの取得
+        guild_speech_queue = await get_guild_speech_queue(guild_id)  # ギルドに対応するキューを取得
+        await guild_speech_queue.put((voice_client, message, notify_style_id))  # ギルドのキューに追加
 
     # ボイスチャンネルに誰もいなくなったら自動的に切断します。
     if after.channel is None and member.guild.voice_client:
