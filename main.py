@@ -210,12 +210,15 @@ async def on_message(message):
 
 async def clear_playback_queue(guild_id):
     guild_queue = get_guild_playback_queue(guild_id)
-    while not guild_queue.empty():
+    while True:
         try:
-            guild_queue.get_nowait()
+            # 非同期にキューからアイテムを取得し、即座に処理を続行します。
+            item = await guild_queue.get()
+            guild_queue.task_done()
         except asyncio.QueueEmpty:
-            continue
-        guild_queue.task_done()
+            # キューが空になった場合はループを抜けます。
+            break
+
 
 
 @bot.command(name="clear", help="読み上げキューをクリアし、待機状態にします。")
