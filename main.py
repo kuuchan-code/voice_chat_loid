@@ -215,8 +215,9 @@ async def on_message(message):
     )
 
     style_id = speaker_settings.get(str(message.author.id), user_default_style_id)
-
-    await speech_queue.put((voice_client, message.content, style_id))
+    guild_id = str(message.guild.id)  # ギルドIDの取得
+    guild_speech_queue = await get_guild_speech_queue(guild_id)  # ギルドに対応するキューを取得
+    await guild_speech_queue.put((voice_client, message.content, style_id))  # ギルドのキューに追加
 
 
 @bot.command(name="clear", help="読み上げキューをクリアし、待機状態にします。")
