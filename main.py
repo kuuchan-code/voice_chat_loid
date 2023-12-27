@@ -166,7 +166,9 @@ async def on_ready():
     print(f"Logged in as {bot.user.name}")
     await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
     # バックグラウンドタスクとしてキュー処理関数を開始します。
-    bot.loop.create_task(process_speech_queue())
+    for guild in bot.guilds:
+        guild_id = guild.id
+        bot.loop.create_task(process_speech_queue(guild_id))
 
 
 @bot.event
