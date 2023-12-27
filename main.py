@@ -127,7 +127,7 @@ async def text_to_speech(voice_client, text, speaker_id):
     except Exception as e:
         print(f"Error in text_to_speech for guild {voice_client.guild.id}: {e}")
     finally:
-        await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ")))
+        await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
 
         # ステータスを待機中に更新
         await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
