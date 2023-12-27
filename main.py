@@ -99,43 +99,48 @@ async def synthesis(speaker, query_data):
 
 
 async def text_to_speech(voice_client, text, speaker_id):
-    # スピーカー名とスタイル名を取得
-    speaker_name, style_name = get_style_details(speaker_id)
+    try:
+        print(f"Preparing to speak in guild {voice_client.guild.id}: '{text}'")
+        # スピーカー名とスタイル名を取得
+        speaker_name, style_name = get_style_details(speaker_id)
 
-    # ステータスメッセージにスピーカー名とスタイル名を含める
-    reading_status = f"読み上げ中 | VOICEVOX:{speaker_name}"
-    await bot.change_presence(activity=discord.Game(name=reading_status))
+        # ステータスメッセージにスピーカー名とスタイル名を含める
+        reading_status = f"読み上げ中 | VOICEVOX:{speaker_name}"
+        await bot.change_presence(activity=discord.Game(name=reading_status))
 
-    # 既に音声を再生中であれば、待機します。
-    while voice_client.is_playing():
-        await asyncio.sleep(0.5)
+        # 既に音声を再生中であれば、待機します。
+        while voice_client.is_playing():
+            await asyncio.sleep(0.5)
 
-    # 音声合成のクエリデータを取得し、音声を再生します。
-    query_data = await audio_query(text, speaker_id)
-    if query_data:
-        voice_data = await synthesis(speaker_id, query_data)
-        if voice_data:
-            try:
+        # 音声合成のクエリデータを取得し、音声を再生します。
+        query_data = await audio_query(text, speaker_id)
+        if query_data:
+            voice_data = await synthesis(speaker_id, query_data)
+            if voice_data:
+                print(f"Playing audio in guild {voice_client.guild.id}")
                 audio_source = discord.FFmpegPCMAudio(io.BytesIO(voice_data), pipe=True)
                 voice_client.play(audio_source)
                 while voice_client.is_playing():
                     await asyncio.sleep(1)
-            finally:
-                # エラーが発生してもリソースを確実に解放します。
-                audio_source.cleanup()
+            else:
+                print(f"Failed to retrieve voice data in guild {voice_client.guild.id}")
+    except Exception as e:
+        print(f"Error in text_to_speech for guild {voice_client.guild.id}: {e}")
+    finally:
+        await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ")))
 
-    # ステータスを待機中に更新
-    await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
+        # ステータスを待機中に更新
+        await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
 
 
 async def process_speech_queue(guild_id):
     global current_voice_client
     speech_queue = await get_guild_speech_queue(guild_id)
-    print(f"Processing speech queue for guild: {guild_id}")
+    print(f"Started processing speech queue for guild: {guild_id}. Queue size: {speech_queue.qsize()}")
     while True:
         try:
             voice_client, text, style_id = await speech_queue.get()
-            print(f"Received item from queue in guild {guild_id}: {text}")
+            print(f"Received item from queue in guild {guild_id}: '{text}' with style ID: {style_id}")
             current_voice_client = voice_client
             await text_to_speech(voice_client, text, style_id)
         except Exception as e:
