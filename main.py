@@ -208,27 +208,18 @@ async def on_message(message):
     await text_to_speech(voice_client, message.content, style_id, guild_id)
 
 
-async def clear_playback_queue(guild_id):
-    guild_queue = get_guild_playback_queue(guild_id)
-    while not guild_queue.empty():
-        try:
-            guild_queue.get_nowait()
-        except asyncio.QueueEmpty:
-            continue
-        guild_queue.task_done()
 
 
 @bot.command(name="clear", help="読み上げキューをクリアし、待機状態にします。")
 async def clear(ctx):
-    global current_voice_client
     guild_id = str(ctx.guild.id)
 
-    # 現在の読み上げを停止する
-    if current_voice_client and current_voice_client.is_playing():
-        current_voice_client.stop()
+    voice_client = ctx.guild.voice_client
+    if voice_client and voice_client.is_playing():
+        voice_client.stop()
 
     # キューをクリアする
-    await clear_playback_queue(guild_id)
+    guild_playback_queues[guild_id] = asyncio.Queue()
 
     # ボットのステータスを更新する
     await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
@@ -240,8 +231,6 @@ async def clear(ctx):
 @bot.event
 async def on_voice_state_update(member, before, after):
     guild_id = str(member.guild.id)
-    guild_queue = get_guild_playback_queue(guild_id)
-
     # ボット自身の状態変更を無視
     if member == bot.user:
         return
@@ -276,11 +265,11 @@ async def on_voice_state_update(member, before, after):
         # ボイスチャンネルにまだ誰かいるか確認します。
         if not any(not user.bot for user in before.channel.members):
             # 現在の読み上げを停止する
-            if current_voice_client and current_voice_client.is_playing():
-                current_voice_client.stop()
+            if voice_client and voice_client.is_playing():
+                voice_client.stop()
 
             # キューをクリアする
-            await clear_playback_queue(guild_id)
+            guild_playback_queues[guild_id] = asyncio.Queue()
             if (
                 guild_id in speaker_settings
                 and "text_channel" in speaker_settings[guild_id]
