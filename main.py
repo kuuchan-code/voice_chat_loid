@@ -208,9 +208,6 @@ async def on_message(message):
     await text_to_speech(voice_client, message.content, style_id, guild_id)
 
 
-
-
-
 @bot.event
 async def on_voice_state_update(member, before, after):
     guild_id = str(member.guild.id)
