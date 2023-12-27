@@ -257,7 +257,7 @@ async def on_voice_state_update(member, before, after):
         notify_style_id = speaker_settings.get(str(member.guild.id), {}).get(
             "notify", NOTIFY_STYLE_ID
         )
-        await speech_queue.put((voice_client, message, notify_style_id))
+        await guild_speech_queue.put((voice_client, message.content, notify_style_id))  # ギルドのキューに追加
 
     # ボイスチャンネルから切断したとき
     elif (
@@ -420,7 +420,7 @@ async def join(ctx):
         )
 
         # メッセージとスタイルIDをキューに追加
-        await speech_queue.put((voice_client, welcome_message, notify_style_id))
+        await guild_speech_queue.put((voice_client, welcome_message, notify_style_id))  # ギルドのキューに追加
 
 
 @bot.command(name="leave", help="ボットをボイスチャンネルから切断します。")
