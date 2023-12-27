@@ -210,21 +210,6 @@ async def on_message(message):
 
 
 
-@bot.command(name="clear", help="読み上げキューをクリアし、待機状態にします。")
-async def clear(ctx):
-    voice_client = ctx.guild.voice_client
-    while(voice_client and voice_client.is_playing()):
-        voice_client.stop()
-        asyncio.sleep(0.1)
-        # ユーザーに通知する
-        await ctx.send("読み上げを停止し、キューをクリアしました。ボットは待機中です。")
-    else:
-        await ctx.send("再生中の音声はありません。")
-
-    # ボットのステータスを更新する
-    await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
-
-
 @bot.event
 async def on_voice_state_update(member, before, after):
     guild_id = str(member.guild.id)
@@ -266,7 +251,7 @@ async def on_voice_state_update(member, before, after):
                 current_voice_client.stop()
 
             # キューをクリアする
-            while(voice_client and voice_client.is_playing()):
+            while voice_client and voice_client.is_playing():
                 voice_client.stop()
                 asyncio.sleep(0.1)
             if (
