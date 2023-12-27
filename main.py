@@ -127,8 +127,6 @@ async def text_to_speech(voice_client, text, speaker_id):
     except Exception as e:
         print(f"Error in text_to_speech for guild {voice_client.guild.id}: {e}")
     finally:
-        await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
-
         # ステータスを待機中に更新
         await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
 
@@ -225,9 +223,9 @@ async def on_message(message):
     style_id = speaker_settings.get(str(message.author.id), user_default_style_id)
     guild_id = str(message.guild.id)  # ギルドIDの取得
     guild_speech_queue = await get_guild_speech_queue(guild_id)  # ギルドに対応するキューを取得
-    await guild_speech_queue.put(
-        (voice_client, message.content, style_id)
-    )  # ギルドのキューに追加
+    # メッセージがキューに追加される直前にログを出力
+    print(f"Queueing message from {message.author}: '{message.content}' in guild {guild_id}")
+    await guild_speech_queue.put((voice_client, message.content, style_id))
 
 
 @bot.command(name="clear", help="読み上げキューをクリアし、待機状態にします。")
