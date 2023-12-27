@@ -145,7 +145,6 @@ async def process_speech_queue(guild_id):
             current_voice_client = None
 
 
-
 async def get_guild_speech_queue(guild_id):
     """指定されたサーバーのキューを取得、存在しない場合は新しく作成します。"""
     if guild_id not in guild_speech_queues:
@@ -168,10 +167,11 @@ async def clear_guild_speech_queue(guild_id):
 async def on_ready():
     print(f"Logged in as {bot.user.name}")
     await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
-    # バックグラウンドタスクとしてキュー処理関数を開始します。
     for guild in bot.guilds:
         guild_id = guild.id
+        print(f"Creating task for guild: {guild_id}")
         bot.loop.create_task(process_speech_queue(guild_id))
+
 
 
 @bot.event
@@ -220,7 +220,9 @@ async def on_message(message):
     style_id = speaker_settings.get(str(message.author.id), user_default_style_id)
     guild_id = str(message.guild.id)  # ギルドIDの取得
     guild_speech_queue = await get_guild_speech_queue(guild_id)  # ギルドに対応するキューを取得
-    await guild_speech_queue.put((voice_client, message.content, style_id))  # ギルドのキューに追加
+    await guild_speech_queue.put(
+        (voice_client, message.content, style_id)
+    )  # ギルドのキューに追加
 
 
 @bot.command(name="clear", help="読み上げキューをクリアし、待機状態にします。")
@@ -260,7 +262,9 @@ async def on_voice_state_update(member, before, after):
         notify_style_id = speaker_settings.get(str(member.guild.id), {}).get(
             "notify", NOTIFY_STYLE_ID
         )
-        await guild_speech_queue.put((voice_client, message.content, notify_style_id))  # ギルドのキューに追加
+        await guild_speech_queue.put(
+            (voice_client, message.content, notify_style_id)
+        )  # ギルドのキューに追加
 
     # ボイスチャンネルから切断したとき
     elif (
@@ -272,7 +276,9 @@ async def on_voice_state_update(member, before, after):
         )
         guild_id = str(member.guild.id)  # ギルドIDの取得
         guild_speech_queue = await get_guild_speech_queue(guild_id)  # ギルドに対応するキューを取得
-        await guild_speech_queue.put((voice_client, message, notify_style_id))  # ギルドのキューに追加
+        await guild_speech_queue.put(
+            (voice_client, message, notify_style_id)
+        )  # ギルドのキューに追加
 
     # ボイスチャンネルに誰もいなくなったら自動的に切断します。
     if after.channel is None and member.guild.voice_client:
@@ -359,9 +365,7 @@ async def notify_style(ctx, style_id: int = None):
             return
 
     # 現在のサーバースタイル設定を表示
-    notify_style_id = speaker_settings.get(guild_id, {}).get(
-        "default", NOTIFY_STYLE_ID
-    )
+    notify_style_id = speaker_settings.get(guild_id, {}).get("default", NOTIFY_STYLE_ID)
     notify_speaker, notify_default_name = get_style_details(notify_style_id, "デフォルト")
 
     response = f"**{ctx.guild.name}の通知スタイル:** {notify_speaker} {notify_default_name} (ID: {notify_style_id})\n"
@@ -423,7 +427,9 @@ async def join(ctx):
         )
         guild_speech_queue = await get_guild_speech_queue(guild_id)  # ギルドに対応するキューを取得
         # メッセージとスタイルIDをキューに追加
-        await guild_speech_queue.put((voice_client, welcome_message, notify_style_id))  # ギルドのキューに追加
+        await guild_speech_queue.put(
+            (voice_client, welcome_message, notify_style_id)
+        )  # ギルドのキューに追加
 
 
 @bot.command(name="leave", help="ボットをボイスチャンネルから切断します。")
