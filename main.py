@@ -7,14 +7,28 @@ import io
 import os
 import requests
 
-# ユーザーのデフォルトスタイルID
-USER_DEFAULT_STYLE_ID = 3
-NOTIFY_STYLE_ID = 8
 
-MAX_MESSAGE_LENGTH = 200  # 適切な最大長を定義
+class BotConfig:
+    """Bot configuration and constants."""
 
-# グローバル変数を追加して、現在再生中の音声を追跡します。
-current_voice_client = None
+    USER_DEFAULT_STYLE_ID = 3
+    NOTIFY_STYLE_ID = 8
+    MAX_MESSAGE_LENGTH = 200
+
+
+class DiscordBot(commands.Bot):
+    def __init__(self, command_prefix, intents):
+        super().__init__(command_prefix, intents=intents)
+        self.speakers = self.fetch_speakers()
+        self.speaker_settings = self.load_style_settings()
+        self.guild_playback_queues = {}
+        self.current_voice_client = None
+
+    def get_guild_playback_queue(self, guild_id):
+        """Retrieve or create the playback queue for the specified guild ID."""
+        if guild_id not in self.guild_playback_queues:
+            self.guild_playback_queues[guild_id] = asyncio.Queue()
+        return self.guild_playback_queues[guild_id]
 
 
 headers = {"Content-Type": "application/json"}
@@ -152,12 +166,11 @@ async def text_to_speech(voice_client, text, style_id, guild_id):
     await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
 
 
-@bot.event
-async def on_ready():
-    print(f"Logged in as {bot.user.name}")
-    await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
-    for guild in bot.guilds:
-        bot.loop.create_task(process_playback_queue(str(guild.id)))
+async def on_ready(self):
+    print(f"Logged in as {self.user.name}")
+    await self.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
+    for guild in self.guilds:
+        self.loop.create_task(self.process_playback_queue(str(guild.id)))
 
 
 @bot.event
@@ -186,21 +199,21 @@ async def on_message(message):
     ):
         return
 
-    if len(message.content) > MAX_MESSAGE_LENGTH:
+    if len(message.content) > BotConfig.MAX_MESSAGE_LENGTH:
         # テキストチャンネルに警告を送信
         await message.channel.send(
-            f"申し訳ありません、メッセージが長すぎて読み上げられません！（最大 {MAX_MESSAGE_LENGTH} 文字）"
+            f"申し訳ありません、メッセージが長すぎて読み上げられません！（最大 {BotConfig.MAX_MESSAGE_LENGTH} 文字）"
         )
         return  # このメッセージのTTS処理をスキップ
 
     guild_id = str(message.guild.id)
     # Initialize default settings for the server if none exist
     if guild_id not in speaker_settings:
-        speaker_settings[guild_id] = {"user_default": USER_DEFAULT_STYLE_ID}
+        speaker_settings[guild_id] = {"user_default": BotConfig.USER_DEFAULT_STYLE_ID}
 
     # Use get to safely access 'user_default' key
     user_default_style_id = speaker_settings[guild_id].get(
-        "user_default", USER_DEFAULT_STYLE_ID
+        "user_default", BotConfig.USER_DEFAULT_STYLE_ID
     )
 
     style_id = speaker_settings.get(str(message.author.id), user_default_style_id)
@@ -257,7 +270,7 @@ async def on_voice_state_update(member, before, after):
     if before.channel != voice_client.channel and after.channel == voice_client.channel:
         message = f"{member.display_name}さんが{after.channel.name}に入室しました。"
         notify_style_id = speaker_settings.get(str(member.guild.id), {}).get(
-            "notify", NOTIFY_STYLE_ID
+            "notify", BotConfig.NOTIFY_STYLE_ID
         )
         await guild_queue.put((voice_client, message, notify_style_id))
 
@@ -267,7 +280,7 @@ async def on_voice_state_update(member, before, after):
     ):
         message = f"{member.display_name}さんが{before.channel.name}から退出しました。"
         notify_style_id = speaker_settings.get(str(member.guild.id), {}).get(
-            "notify", NOTIFY_STYLE_ID
+            "notify", BotConfig.NOTIFY_STYLE_ID
         )
         await guild_queue.put((voice_client, message, notify_style_id))
 
@@ -301,11 +314,11 @@ async def user_default_style(ctx, style_id: int = None):
 
     # Ensure server settings are initialized
     if guild_id not in speaker_settings:
-        speaker_settings[guild_id] = {"user_default": USER_DEFAULT_STYLE_ID}
+        speaker_settings[guild_id] = {"user_default": BotConfig.USER_DEFAULT_STYLE_ID}
 
     # Use get to safely access 'user_default'
     current_default = speaker_settings[guild_id].get(
-        "user_default", USER_DEFAULT_STYLE_ID
+        "user_default", BotConfig.USER_DEFAULT_STYLE_ID
     )
 
     if style_id is not None:
@@ -356,7 +369,9 @@ async def notify_style(ctx, style_id: int = None):
             return
 
     # 現在のサーバースタイル設定を表示
-    notify_style_id = speaker_settings.get(guild_id, {}).get("default", NOTIFY_STYLE_ID)
+    notify_style_id = speaker_settings.get(guild_id, {}).get(
+        "default", BotConfig.NOTIFY_STYLE_ID
+    )
     notify_speaker, notify_default_name = get_style_details(notify_style_id, "デフォルト")
 
     response = f"**{ctx.guild.name}の通知スタイル:** {notify_speaker} {notify_default_name} (ID: {notify_style_id})\n"
@@ -385,7 +400,7 @@ async def my_style(ctx, style_id: int = None):
             return
 
     # 現在のスタイル設定を表示
-    user_style_id = speaker_settings.get(user_id, USER_DEFAULT_STYLE_ID)
+    user_style_id = speaker_settings.get(user_id, BotConfig.USER_DEFAULT_STYLE_ID)
     user_speaker, user_style_name = get_style_details(user_style_id, "デフォルト")
 
     response = f"**{ctx.author.display_name}さんのスタイル:** {user_speaker} {user_style_name} (ID: {user_style_id})"
@@ -414,7 +429,7 @@ async def join(ctx):
 
         # 通知スタイルIDを取得
         notify_style_id = speaker_settings.get(guild_id, {}).get(
-            "notify", NOTIFY_STYLE_ID
+            "notify", BotConfig.NOTIFY_STYLE_ID
         )
 
         # メッセージとスタイルIDをキューに追加
@@ -463,7 +478,4 @@ async def servers(ctx):
 
 speakers = fetch_speakers()
 speaker_settings = load_style_settings()
-
-
-if __name__ == "__main__":
-    bot.run(os.getenv("DISCORD_BOT_TOKEN"))
+bot.run(os.getenv("DISCORD_BOT_TOKEN"))
