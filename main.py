@@ -123,17 +123,22 @@ async def text_to_speech(voice_client, text, speaker_id):
 async def process_speech_queue(guild_id):
     global current_voice_client
     speech_queue = await get_guild_speech_queue(guild_id)
+    print(f"Started processing speech queue for guild {guild_id}. Queue size: {speech_queue.qsize()}")
     while True:
         try:
             voice_client, text, style_id = await speech_queue.get()
-            print(f"Processing message: '{text}' from queue in guild {guild_id}")
-            current_voice_client = voice_client
-            await text_to_speech(voice_client, text, style_id)
+            if voice_client and voice_client.is_connected():
+                print(f"Processing message: '{text}' with style ID: {style_id} in guild {guild_id}")
+                current_voice_client = voice_client
+                await text_to_speech(voice_client, text, style_id)
+            else:
+                print(f"Voice client not connected or available in guild {guild_id}")
         except Exception as e:
             print(f"Error processing speech queue in guild {guild_id}: {e}")
         finally:
             speech_queue.task_done()
             current_voice_client = None
+
 
 
 async def get_guild_speech_queue(guild_id):
