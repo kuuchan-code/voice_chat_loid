@@ -7,24 +7,23 @@ import io
 import os
 import requests
 
-# ユーザーのデフォルトスタイルID
+# Constants
 USER_DEFAULT_STYLE_ID = 3
 NOTIFY_STYLE_ID = 8
+MAX_MESSAGE_LENGTH = 200
 
-MAX_MESSAGE_LENGTH = 200  # 適切な最大長を定義
-
-# グローバル変数を追加して、現在再生中の音声を追跡します。
+# Global Variables
 current_voice_client = None
-
-
+guild_playback_queues = {}
 headers = {"Content-Type": "application/json"}
+
+# Discord Bot Setup
 intents = discord.Intents.default()
 intents.messages = True
 intents.guilds = True
 intents.voice_states = True
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
-guild_playback_queues = {}
 
 
 def get_guild_playback_queue(guild_id):
@@ -35,14 +34,13 @@ def get_guild_playback_queue(guild_id):
 
 
 def fetch_speakers():
-    """スピーカー情報を取得します。"""
     url = "http://127.0.0.1:50021/speakers"
     try:
         response = requests.get(url)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"データの取得に失敗しました: {e}")
+        print(f"Failed to fetch data: {e}")
         return None
 
 
@@ -74,22 +72,14 @@ playback_queue = asyncio.Queue()
 
 
 async def process_playback_queue(guild_id):
-    guild_queue = get_guild_playback_queue(guild_id)
+    guild_queue = guild_playback_queues.get(guild_id, asyncio.Queue())
     while True:
-        item = await guild_queue.get()
-        try:
-            if isinstance(item, tuple) and len(item) == 2:
-                voice_client, audio_source = item
-                if voice_client and not voice_client.is_playing():
-                    voice_client.play(audio_source)
-                    while voice_client.is_playing():
-                        await asyncio.sleep(0.1)
-            else:
-                raise ValueError(f"Unexpected item format in queue: {item}")
-        except ValueError as e:
-            print(e)  # Log the error or handle it as needed.
-        finally:
-            guild_queue.task_done()
+        voice_client, audio_source = await guild_queue.get()
+        if voice_client and not voice_client.is_playing():
+            voice_client.play(audio_source)
+            while voice_client.is_playing():
+                await asyncio.sleep(0.1)
+        guild_queue.task_done()
 
 
 async def audio_query(text, style_id):
@@ -461,9 +451,10 @@ async def servers(ctx):
     await ctx.send(f"現在、{number_of_servers}個のサーバーに参加しています。")
 
 
+# Load Speakers and Settings
 speakers = fetch_speakers()
 speaker_settings = load_style_settings()
 
-
+# Start Bot
 if __name__ == "__main__":
     bot.run(os.getenv("DISCORD_BOT_TOKEN"))
