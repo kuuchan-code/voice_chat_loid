@@ -134,6 +134,7 @@ async def text_to_speech(voice_client, text, style_id):
         if voice_data:
             audio_source = discord.FFmpegPCMAudio(io.BytesIO(voice_data), pipe=True)
             try:
+                # Add the audio source to the playback queue
                 await playback_queue.put((voice_client, audio_source))
                 while voice_client.is_playing():
                     await asyncio.sleep(1)
@@ -141,7 +142,9 @@ async def text_to_speech(voice_client, text, style_id):
                 print(f"An error occurred while playing audio: {e}")
             finally:
                 try:
-                    audio_source.cleanup()
+                    # Ensure cleanup is safe to call
+                    if audio_source:
+                        audio_source.cleanup()
                 except Exception as e:
                     print(f"Failed to clean up audio source: {e}")
 
