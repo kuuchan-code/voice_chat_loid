@@ -71,7 +71,7 @@ class DiscordBot(commands.Bot):
         with open("style_settings.json", "w") as f:
             json.dump(self.speaker_settings, f)
 
-    async def process_playback_queue(guild_id):
+    async def process_playback_queue(self, guild_id):
         guild_queue = get_guild_playback_queue(guild_id)
         while True:
             item = await guild_queue.get()
@@ -89,7 +89,7 @@ class DiscordBot(commands.Bot):
             finally:
                 guild_queue.task_done()
 
-    async def audio_query(text, style_id):
+    async def audio_query(self, text, style_id):
         # 音声合成用のクエリを作成します。
         query_payload = {"text": text, "speaker": style_id}
         async with aiohttp.ClientSession() as session:
@@ -105,7 +105,7 @@ class DiscordBot(commands.Bot):
                     print(f"処理できないエンティティ: {error_detail}")
                     return None
 
-    async def synthesis(speaker, query_data):
+    async def synthesis(self, speaker, query_data):
         # 音声合成を行います。
         synth_payload = {"speaker": speaker}
         headers = {"Content-Type": "application/json", "Accept": "audio/wav"}
@@ -150,7 +150,7 @@ class DiscordBot(commands.Bot):
                 except Exception as e:
                     print(f"An error occurred while playing audio: {e}")
 
-    async def replace_content(text, message):
+    async def replace_content(self, text, message):
         # ユーザーメンションを検出する正規表現パターン
         user_mention_pattern = re.compile(r"<@!?(\d+)>")
         # ロールメンションを検出する正規表現パターン
@@ -191,7 +191,7 @@ class DiscordBot(commands.Bot):
 
         return text
 
-    async def clear_playback_queue(guild_id):
+    async def clear_playback_queue(self, guild_id):
         guild_queue = get_guild_playback_queue(guild_id)
         while not guild_queue.empty():
             try:
