@@ -54,12 +54,9 @@ def load_style_settings():
 
 class DiscordBot(commands.Bot):
     def __init__(self, command_prefix, intents):
-        super().__init__(command_prefix, intents)
-        self.speakers = self.fetch_speakers()
-        self.style_settings = self.load_style_settings()
-
-        # コマンドを登録
-        self.add_command(self.notify_style)
+        super().__init__(command_prefix=command_prefix, intents=intents)
+        self.speakers = fetch_speakers()
+        self.style_settings = load_style_settings()
 
     def get_style_details(self, style_id, default_name="デフォルト"):
         """スタイルIDに対応するスピーカー名とスタイル名を返します。"""
