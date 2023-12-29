@@ -61,7 +61,7 @@ class DiscordBot(commands.Bot):
         # コマンドを登録
         self.add_command(self.notify_style)
 
-    def get_style_details(self,style_id, default_name="デフォルト"):
+    def get_style_details(self, style_id, default_name="デフォルト"):
         """スタイルIDに対応するスピーカー名とスタイル名を返します。"""
         for speaker in self.speakers:
             for style in speaker["styles"]:
@@ -123,7 +123,7 @@ class DiscordBot(commands.Bot):
                     return await response.read()
                 return None
 
-    async def text_to_speech(self,voice_client, text, style_id, guild_id):
+    async def text_to_speech(self, voice_client, text, style_id, guild_id):
         lines = text.split("\n")
         tasks = []
 
@@ -139,7 +139,7 @@ class DiscordBot(commands.Bot):
         # Wait for all tasks to complete
         await asyncio.gather(*tasks)
 
-    async def speak_line(self,voice_client, line, style_id, guild_id):
+    async def speak_line(self, voice_client, line, style_id, guild_id):
         # The rest of your logic for processing each line
         query_data = await self.audio_query(line, style_id)
         if query_data:
@@ -222,7 +222,9 @@ class DiscordBot(commands.Bot):
         # ボイスチャンネルに接続されていない、またはメッセージがコマンドの場合は無視
         voice_client = message.guild.voice_client
         # 設定されたテキストチャンネルIDを取得（存在しない場合はNone）
-        allowed_text_channel_id = self.speaker_settings.get(guild_id, {}).get("text_channel")
+        allowed_text_channel_id = self.speaker_settings.get(guild_id, {}).get(
+            "text_channel"
+        )
         if (
             not voice_client
             or not voice_client.channel
@@ -251,7 +253,9 @@ class DiscordBot(commands.Bot):
             "user_default", USER_DEFAULT_STYLE_ID
         )
 
-        style_id = self.speaker_settings.get(str(message.author.id), user_default_style_id)
+        style_id = self.speaker_settings.get(
+            str(message.author.id), user_default_style_id
+        )
 
         # メッセージ内容を置換
         message_content = await self.replace_content(message.content, message)
@@ -323,7 +327,7 @@ class DiscordBot(commands.Bot):
         name="_userdefaultstyle",
         help="ユーザーのデフォルトスタイルを表示または設定します。使用法: !_userdefaultstyle [スタイルID]",
     )
-    async def user_default_style(self,ctx, style_id: int = None):
+    async def user_default_style(self, ctx, style_id: int = None):
         guild_id = str(ctx.guild.id)
 
         # Ensure server settings are initialized
@@ -359,7 +363,7 @@ class DiscordBot(commands.Bot):
     @commands.command(
         name="notifystyle", help="入退室通知のスタイルを表示または設定します。使用法: !notifystyle [スタイルID]"
     )
-    async def notify_style(self,ctx, style_id: int = None):
+    async def notify_style(self, ctx, style_id: int = None):
         guild_id = str(ctx.guild.id)
 
         # スタイルIDが指定されている場合は設定を更新
@@ -395,7 +399,7 @@ class DiscordBot(commands.Bot):
     @commands.command(
         name="mystyle", help="あなたの現在のスタイルを表示または設定します。使用法: !mystyle [スタイルID]"
     )
-    async def my_style(self,ctx, style_id: int = None):
+    async def my_style(self, ctx, style_id: int = None):
         user_id = str(ctx.author.id)
 
         # スタイルIDが指定されている場合は設定を更新
@@ -423,7 +427,7 @@ class DiscordBot(commands.Bot):
         await ctx.send(response)
 
     @commands.command(name="join", help="ボットをボイスチャンネルに接続し、読み上げを開始します。")
-    async def join(self,ctx):
+    async def join(self, ctx):
         if ctx.author.voice and ctx.author.voice.channel:
             channel = ctx.author.voice.channel
             voice_client = await channel.connect(self_deaf=True)
@@ -453,7 +457,7 @@ class DiscordBot(commands.Bot):
             )
 
     @commands.command(name="leave", help="ボットをボイスチャンネルから切断します。")
-    async def leave(self,ctx):
+    async def leave(self, ctx):
         if ctx.voice_client:
             guild_id = str(ctx.guild.id)
             # テキストチャンネルIDの設定をクリア
@@ -464,7 +468,7 @@ class DiscordBot(commands.Bot):
             await ctx.send("ボイスチャンネルから切断しました。")
 
     @commands.command(name="skip", help="現在再生中の音声をスキップします。")
-    async def skip(ctx):
+    async def skip(self, ctx):
         voice_client = ctx.guild.voice_client
         if voice_client and voice_client.is_playing():
             voice_client.stop()
@@ -473,7 +477,7 @@ class DiscordBot(commands.Bot):
             await ctx.send("再生中の音声はありません。")
 
     @commands.command(name="showstyles", help="利用可能なスタイルIDの一覧を表示します。")
-    async def show_styles(self,ctx):
+    async def show_styles(self, ctx):
         message_lines = []
         for speaker in self.speakers:
             name = speaker["name"]
