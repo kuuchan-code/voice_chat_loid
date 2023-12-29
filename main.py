@@ -427,7 +427,7 @@ class DiscordBot(commands.Bot):
         await ctx.send(response)
 
     @commands.command(name="join", help="ボットをボイスチャンネルに接続し、読み上げを開始します。")
-    async def join(ctx, self):
+    async def join(self, ctx):
         if ctx.author.voice and ctx.author.voice.channel:
             channel = ctx.author.voice.channel
             voice_client = await channel.connect(self_deaf=True)
