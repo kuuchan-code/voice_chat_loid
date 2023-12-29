@@ -56,7 +56,7 @@ class DiscordBot(commands.Bot):
     def __init__(self, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
         self.speakers = fetch_speakers()
-        self.style_settings = load_style_settings()
+        self.speaker_settings = load_style_settings()
 
     def get_style_details(self, style_id, default_name="デフォルト"):
         """スタイルIDに対応するスピーカー名とスタイル名を返します。"""
@@ -200,12 +200,14 @@ class DiscordBot(commands.Bot):
                 continue
             guild_queue.task_done()
 
+    @commands.Cog.listener()
     async def on_ready(self):
         print(f"Logged in as {bot.user.name}")
         await bot.change_presence(activity=discord.Game(name="待機中 | !helpでヘルプ"))
         for guild in bot.guilds:
             bot.loop.create_task(self.process_playback_queue(str(guild.id)))
 
+    @commands.Cog.listener()
     async def on_message(self, message):
         guild_id = str(message.guild.id)
 
@@ -265,6 +267,7 @@ class DiscordBot(commands.Bot):
             file_message = "ファイルが投稿されました。"
             await self.text_to_speech(voice_client, file_message, style_id, guild_id)
 
+    @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         guild_id = str(member.guild.id)
         # ボット自身の状態変更を無視
@@ -492,17 +495,5 @@ if __name__ == "__main__":
     intents.voice_states = True
     intents.message_content = True
     bot = DiscordBot(command_prefix="!", intents=intents)
-    # コマンドを追加
-    bot.add_command(bot.user_default_style)
-    bot.add_command(bot.notify_style)
-    bot.add_command(bot.my_style)
-    bot.add_command(bot.join)
-    bot.add_command(bot.leave)
-    bot.add_command(bot.skip)
-    bot.add_command(bot.show_styles)
 
-    # イベントハンドラを追加
-    bot.add_listener(bot.on_ready)
-    bot.add_listener(bot.on_message)
-    bot.add_listener(bot.on_voice_state_update)
     bot.run(os.getenv("DISCORD_BOT_TOKEN"))
