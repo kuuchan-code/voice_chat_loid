@@ -495,5 +495,13 @@ if __name__ == "__main__":
     intents.voice_states = True
     intents.message_content = True
     bot = DiscordBot(command_prefix="!", intents=intents)
+    # コマンドを追加
+    bot.add_command(bot.user_default_style)
+    bot.add_command(bot.notify_style)
+    bot.add_command(bot.my_style)
+    bot.add_command(bot.join)
+    bot.add_command(bot.leave)
+    bot.add_command(bot.skip)
+    bot.add_command(bot.show_styles)
 
     bot.run(os.getenv("DISCORD_BOT_TOKEN"))
