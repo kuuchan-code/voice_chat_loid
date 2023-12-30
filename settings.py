@@ -9,7 +9,7 @@ SPEAKERS_URL = "http://127.0.0.1:50021/speakers"
 AUDIO_QUERY_URL = "http://127.0.0.1:50021/audio_query"
 SYNTHESIS_URL = "http://127.0.0.1:50021/synthesis"
 STYLE_SETTINGS_FILE = "style_settings.json"
-TEST_GUILD_ID = discord.Object(id="1129051248574869617")
+TEST_GUILD_ID = discord.Object(id="1189256965172514836")
 
 
 # gender_categories = {
