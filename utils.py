@@ -63,6 +63,12 @@ def load_style_settings():
 
 
 async def replace_content(text, message):
+    # 特定の絵文字を日本語に置き換えるためのマッピング
+    special_emoji_mapping = {
+        ":flag_hk:": "旗　香港",
+        ":flag_ps:": "旗　パレスチナ",
+    }
+
     # ユーザーメンションを検出する正規表現パターン
     user_mention_pattern = re.compile(r"<@!?(\d+)>")
     # ロールメンションを検出する正規表現パターン
@@ -77,24 +83,25 @@ async def replace_content(text, message):
     def replace_user_mention(match):
         user_id = int(match.group(1))
         user = message.guild.get_member(user_id)
-        return user.display_name + "さん" if user else match.group(0)
+        return f"{user.display_name}さん" if user else match.group(0)
 
     def replace_role_mention(match):
         role_id = int(match.group(1))
         role = discord.utils.get(message.guild.roles, id=role_id)
-        return role.name + "役職" if role else match.group(0)
+        return f"{role.name}役職" if role else match.group(0)
 
     def replace_channel_mention(match):
         channel_id = int(match.group(1))
         channel = message.guild.get_channel(channel_id)
-        return channel.name + "チャンネル" if channel else match.group(0)
-
-    def replace_emoji_name_to_kana(text):
-        return emoji.demojize(text, language="ja")
+        return f"{channel.name}チャンネル" if channel else match.group(0)
 
     def replace_custom_emoji_name_to_kana(match):
         emoji_name = match.group(1)
         return jaconv.alphabet2kana(emoji_name) + " "
+
+    # 特定の絵文字を日本語に置き換え
+    for emoji_code, jp_text in special_emoji_mapping.items():
+        text = text.replace(emoji_code, jp_text)
 
     # ユーザーメンションを「○○さん」に置き換え
     text = user_mention_pattern.sub(replace_user_mention, text)
@@ -103,7 +110,10 @@ async def replace_content(text, message):
     text = channel_pattern.sub(replace_channel_mention, text)
     text = custom_emoji_pattern.sub(replace_custom_emoji_name_to_kana, text)
 
-    text = replace_emoji_name_to_kana(text)
+    # 一般的な絵文字を日本語に置き換え
+    text = emoji.demojize(text, language="ja")
+
+    # URLを省略
     text = url_pattern.sub("URL省略", text)
 
     return text
