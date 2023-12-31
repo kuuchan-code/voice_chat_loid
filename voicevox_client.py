@@ -31,7 +31,7 @@ async def audio_query(text, style_id):
         logging.debug(f"Payload: {query_payload}")
 
         async with session.post(
-            AUDIO_QUERY_URL, headers=headers, json=query_payload  # jsonパラメータを使用
+            AUDIO_QUERY_URL, headers=headers, data=json.dumps(query_payload)  # jsonパラメータを使用
         ) as response:
             logging.debug(f"Response Status: {response.status}")
             logging.debug(f"Response Headers: {response.headers}")
