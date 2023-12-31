@@ -143,23 +143,31 @@ async def on_message(message):
     if message.author == bot.user or not message.guild:
         return
 
-    text = message.content  # メッセージ内容を取得
     settings = server_settings.get(message.guild.id)
-    if settings and settings.voice_client:
-        # ユーザーがスタイルIDを設定していない場合、デフォルトのIDを使用
-        style_id = settings.current_settings.get("style_id", USER_DEFAULT_STYLE_ID)
+    # チャンネルIDが一致しない、またはメッセージがコマンドプレフィックスで始まる場合は無視
+    if (
+        not settings
+        or not settings.voice_client
+        or message.channel.id != settings.text_channel_id
+        or message.content.startswith(COMMAND_PREFIX)
+    ):
+        return
 
-        # audio_query関数にtextとstyle_idを渡す
-        query_data = await audio_query(text, style_id)
-        if query_data:
-            await settings.queue.put(
-                {
-                    "style_id": style_id,
-                    "query_data": query_data,
-                }
-            )
-            if not settings.voice_client.is_playing():
-                await settings.play_next_in_queue()
+    text = message.content  # メッセージ内容を取得
+    # ユーザーがスタイルIDを設定していない場合、デフォルトのIDを使用
+    style_id = settings.current_settings.get("style_id", USER_DEFAULT_STYLE_ID)
+
+    # audio_query関数にtextとstyle_idを渡す
+    query_data = await audio_query(text, style_id)
+    if query_data:
+        await settings.queue.put(
+            {
+                "style_id": style_id,
+                "query_data": query_data,
+            }
+        )
+        if not settings.voice_client.is_playing():
+            await settings.play_next_in_queue()
 
     await bot.process_commands(message)
 
