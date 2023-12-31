@@ -145,14 +145,17 @@ async def on_message(message):
     if message.author == bot.user or not message.guild:
         return
 
+    await bot.process_commands(message)
+
+
     settings = server_settings.get(message.guild.id)
-    # # チャンネルIDが一致しない場合は無視
-    # if (
-    #     not settings
-    #     or not settings.voice_client
-    #     or message.channel.id != settings.text_channel_id
-    # ):
-    #     return
+    # チャンネルIDが一致しない場合は無視
+    if (
+        not settings
+        or not settings.voice_client
+        or message.channel.id != settings.text_channel_id
+    ):
+        return
 
     text = message.content  # メッセージ内容を取得
     # ユーザーがスタイルIDを設定していない場合、デフォルトのIDを使用
@@ -170,7 +173,6 @@ async def on_message(message):
         if not settings.voice_client.is_playing():
             await settings.play_next_in_queue()
 
-    await bot.process_commands(message)
 
 
 @bot.command(name="skip")
