@@ -32,6 +32,8 @@ class ServerSettings:
         self.voice_client = None
         self.queue = asyncio.Queue()
         self.current_settings = {}
+        self.text_channel_id = None
+
 
     def update_setting(self, setting_key, value):
         self.current_settings[setting_key] = value
@@ -122,10 +124,13 @@ async def join(ctx):
             voice_client = await channel.connect()
         if ctx.guild.id not in server_settings:
             server_settings[ctx.guild.id] = ServerSettings()
-        server_settings[ctx.guild.id].voice_client = voice_client
+        settings = server_settings[ctx.guild.id]
+        settings.voice_client = voice_client
+        settings.text_channel_id = ctx.channel.id  # テキストチャンネルIDを保存
         await ctx.send(f"{channel.name}に接続しました。")
     else:
         await ctx.send("あなたはボイスチャンネルにいません。")
+
 
 
 @bot.command(name="leave")
