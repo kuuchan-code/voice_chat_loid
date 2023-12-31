@@ -29,7 +29,7 @@ async def list(ctx):
 
     # メッセージを整形して作成
     message = "**利用可能なスピーカーとスタイル:**\n"
-    for speaker in speakers_data[:20]:
+    for speaker in speakers_data[:19]:
         name = speaker["name"]
         character_id = CHARACTORS_INFO.get(name, "unknown")  # キャラクターIDを取得
         url = f"https://voicevox.hiroshiba.jp/dormitory/{character_id}/"
