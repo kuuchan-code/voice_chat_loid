@@ -27,11 +27,7 @@ class PaginationView(View):
         super().__init__()
         self.speakers = speakers
         self.page = page
-        self.total_pages = max(
-            1,
-            len(speakers) // ITEMS_PER_PAGE
-            + (1 if len(speakers) % ITEMS_PER_PAGE > 0 else 0),
-        )
+        self.total_pages = max(1, len(speakers) // ITEMS_PER_PAGE + (1 if len(speakers) % ITEMS_PER_PAGE > 0 else 0))
 
     @discord.ui.button(label="前へ", style=discord.ButtonStyle.primary)
     async def previous(self, interaction: discord.Interaction, button: Button):
@@ -147,8 +143,7 @@ async def handle_voice_config_command(interaction, style_id: int, voice_scope: s
             valid, speaker_name, style_name = validate_style_id(style_id)
             if not valid:
                 await interaction.response.send_message(
-                    f"スタイルID {style_id} は無効です。`/list`で有効なIDを確認し、正しいIDを入力してください。",
-                    ephemeral=True,
+                    f"スタイルID {style_id} は無効です。`/list`で有効なIDを確認し、正しいIDを入力してください。", ephemeral=True
                 )
                 return
             update_style_setting(guild_id, user_id, style_id, voice_scope)
@@ -270,15 +265,10 @@ def setup_commands(bot):
                 announcement_speaker_name, announcement_style_name = get_style_details(
                     announcement_style_id
                 )
-                (
-                    announcement_character_id,
-                    announcement_display_name,
-                ) = get_character_info(announcement_speaker_name)
+                announcement_character_id, announcement_display_name = get_character_info(announcement_speaker_name)
                 announcement_url = f"https://voicevox.hiroshiba.jp/dormitory/{announcement_character_id}/"
                 user_speaker_name, user_style_name = get_style_details(user_style_id)
-                user_character_id, user_tts_display_name = get_character_info(
-                    user_speaker_name
-                )
+                user_character_id, user_tts_display_name = get_character_info(user_speaker_name)
                 user_url = (
                     f"https://voicevox.hiroshiba.jp/dormitory/{user_character_id}/"
                 )
@@ -388,7 +378,7 @@ def setup_commands(bot):
     #         await ctx.send(f"コマンドを削除中にエラーが発生しました: {e}")
     # @bot.tree.command(
     #     name="display_current_settings",
-    #     guild=TEST_GUILD_ID
+    #     guild=TEST_GUILD_ID,
     #     description="現在のスタイル設定を表示します。",
     # )
     # async def display_current_settings(interaction: discord.Interaction):
