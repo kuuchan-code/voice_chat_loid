@@ -41,7 +41,7 @@ class ServerSettings:
                 query_data = await self.queue.get()
                 print(query_data)
                 if query_data:
-                    audio = await synthesis(3, query_data)
+                    audio = await synthesis(query_data['style_id'], query_data['query_data'])
                     if audio:
                         self.voice_client.play(FFmpegPCMAudio(audio, pipe=True))
                 self.queue.task_done()
