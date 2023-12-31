@@ -34,7 +34,6 @@ class ServerSettings:
         self.current_settings = {}
         self.text_channel_id = None
 
-
     def update_setting(self, setting_key, value):
         self.current_settings[setting_key] = value
 
@@ -130,7 +129,6 @@ async def join(ctx):
         await ctx.send(f"{channel.name}に接続しました。")
     else:
         await ctx.send("あなたはボイスチャンネルにいません。")
-
 
 
 @bot.command(name="leave")
