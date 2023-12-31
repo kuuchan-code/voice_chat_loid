@@ -38,6 +38,8 @@ async def list(ctx):
         )
         if name == "ナースロボ＿タイプＴ":
             message += f"\n[test](https://voicevox.hiroshiba.jp/dormitory/nurserobo_typet/)"
+        elif name == "†聖騎士 紅桜†":
+            message += f"\n[聖騎士紅桜](https://voicevox.hiroshiba.jp/dormitory/horinaito_benizakura/): ノーマル (ID: 51)"
         else:
             message += f"\n[{name}]({url}): {styles}"
 
