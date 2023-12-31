@@ -36,12 +36,7 @@ async def list(ctx):
         styles = ", ".join(
             [f"{style['name']} (ID: {style['id']})" for style in speaker["styles"]]
         )
-        if name == "ナースロボ＿タイプＴ":
-            message += f"\n[test](https://voicevox.hiroshiba.jp/dormitory/nurserobo_typet/)"
-        elif name == "†聖騎士 紅桜†":
-            message += f"\ntesttexttesttexttesttexttesttexttesttexttesttexttesttexttesttext"
-        else:
-            message += f"\n[{name}]({url}): {styles}"
+        message += f"\n[{name}]({url}): {styles}"
 
     # メッセージの長さが2000文字を超えないように調整
     if len(message) > 2000:
