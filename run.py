@@ -15,13 +15,13 @@ logging.basicConfig(level=logging.INFO)
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = discord.Client(intents=intents)
+client = discord.Client(intents=intents)
 
 
-@bot.event
+@client.event
 async def on_ready():
-    logging.info(f"ログインしました。ユーザー名: {bot.user.name}!")
-    setup_commands()
+    logging.info(f"ログインしました。ユーザー名: {client.user.name}!")
+    setup_commands(client)
 
 
-bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
+client.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
