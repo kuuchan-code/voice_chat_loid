@@ -35,4 +35,28 @@ async def join(ctx):
         await ctx.send("あなたはボイスチャンネルにいません。")
 
 
+@bot.command(name="list_styles", aliases=["ls"])
+async def list_styles(ctx):
+    """スピーカーとそのスタイルを表示します。"""
+    speakers_data = await fetch_json(SPEAKERS_ENDPOINT)  # 非同期でJSONデータを取得
+
+    if not speakers_data:
+        await ctx.send("スピーカーのデータを取得できませんでした。")
+        return
+
+    # メッセージを整形して作成
+    message = "**利用可能なスピーカーとスタイル:**\n"
+    for speaker in speakers_data:
+        name = speaker["name"]
+        styles = ", ".join([style["name"] for style in speaker["styles"]])
+        message += f"\n**{name}**: {styles}"
+
+    # メッセージの長さが2000文字を超えないように調整
+    if len(message) > 2000:
+        await ctx.send(message[:2000])
+        await ctx.send(message[2000:])
+    else:
+        await ctx.send(message)
+
+
 bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
