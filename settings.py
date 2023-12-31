@@ -28,7 +28,7 @@ CHARACTORS_INFO = {
     "櫻歌ミコ": "ouka_miko",
     "小夜/SAYO": "sayo",
     "ナースロボ＿タイプＴ": "nurserobo_typet",
-    "†聖騎士 紅桜†": "horinaito_benizakura",
+    # "†聖騎士 紅桜†": "horinaito_benizakura",
     "雀松朱司": "wakamatsu_akashi",
     "麒ヶ島宗麟": "kigashima_sourin",
     "春歌ナナ": "haruka_nana",
