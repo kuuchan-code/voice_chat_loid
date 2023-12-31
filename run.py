@@ -1,6 +1,5 @@
 import os
 import discord
-from bot_commands import setup_commands
 
 from settings import CHARACTORS_INFO, COMMAND_PREFIX, SPEAKERS_ENDPOINT
 from discord.ext import commands
@@ -21,12 +20,6 @@ async def on_ready():
     print(f"ログインしました。ユーザー名: {bot.user.name}!")
 
 
-# @bot.event
-# async def on_message(message):
-#     if message.author == bot.user:
-#         return
-
-
 @bot.command(name="list", help="スピーカーとそのスタイルIDを表示します。")
 async def list(ctx):
     """スピーカーとそのスタイルIDを表示します。"""
@@ -43,7 +36,7 @@ async def list(ctx):
         styles = ", ".join(
             [f"{style['name']} (ID: {style['id']})" for style in speaker["styles"]]
         )
-        message += f"\n[{name}]({url}): {styles}"
+        message += f"\n[{name[:-3]}]({url}): {styles}"
 
     # メッセージの長さが2000文字を超えないように調整
     if len(message) > 2000:
