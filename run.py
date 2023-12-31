@@ -1,42 +1,37 @@
 import os
 import discord
-
+import logging
+from discord.ext import commands
 from settings import COMMAND_PREFIX, SPEAKERS_ENDPOINT
 from voicevox_client import fetch_json
+
+logging.basicConfig(level=logging.INFO)
 
 intents = discord.Intents.default()
 intents.message_content = True
 
-client = discord.Client(intents=intents, command_prefix=COMMAND_PREFIX)
+bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=intents)
 
 
-@client.event
+@bot.event
 async def on_ready():
-    print(f"ログインしました。ユーザー名: {client.user.name}!")
+    logging.info(f"ログインしました。ユーザー名: {bot.user.name}!")
 
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-
-    # VCに接続するコマンド
-    if message.content.startswith(f"{COMMAND_PREFIX}join"):
-        # メッセージを送信したユーザーがVCにいるか確認
-        if message.author.voice:
-            channel = message.author.voice.channel
-            await channel.connect()  # VCに接続
-            await message.channel.send(f"{channel.name}に接続しました。")
-        else:
-            await message.channel.send("あなたはボイスチャンネルにいません。")
-
-
-client.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
-
+@bot.command(name='join')
+async def join(ctx):
+    if ctx.author.voice:
+        channel = ctx.author.voice.channel
+        await channel.connect()
+        await ctx.send(f"{channel.name}に接続しました。")
+    else:
+        await ctx.send("あなたはボイスチャンネルにいません。")
 
 speakers_data = fetch_json(SPEAKERS_ENDPOINT)
 
 if speakers_data:
-    print(speakers_data)  # JSONデータを表示
+    logging.info(speakers_data)
 else:
-    print("データの取得に失敗しました。")
+    logging.error("データの取得に失敗しました。")
+
+bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
