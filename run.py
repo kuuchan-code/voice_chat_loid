@@ -14,12 +14,13 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(intents=intents, command_prefix=COMMAND_PREFIX)
+setup_commands(bot)
 
 
 @bot.event
 async def on_ready():
     logging.info(f"ログインしました。ユーザー名: {bot.user.name}!")
     await bot.tree.sync(guild=TEST_GUILD_ID)
-    setup_commands(bot)
+
 
 bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
