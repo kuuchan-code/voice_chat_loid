@@ -36,7 +36,7 @@ async def list(ctx):
         styles = ", ".join(
             [f"{style['name']} (ID: {style['id']})" for style in speaker["styles"]]
         )
-        message += f"\n[{name[1:-1]}]({url}): {styles}"
+        message += f"\n[{name}]({url}): {styles}"
 
     # メッセージの長さが2000文字を超えないように調整
     if len(message) > 2000:
