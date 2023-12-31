@@ -1,5 +1,6 @@
 import os
 import discord
+from bot_commands import setup_commands
 
 from settings import COMMAND_PREFIX
 from voicevox_client import fetch_json
@@ -8,7 +9,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 client = discord.Client(intents=intents, command_prefix=COMMAND_PREFIX)
-
+setup_commands(client)
 
 @client.event
 async def on_ready():

@@ -9,10 +9,10 @@ from settings import (
 from voicevox_client import fetch_json
 
 
-def setup_commands(bot):
+def setup_commands(client):
     speakers_data = fetch_json(SPEAKERS_ENDPOINT)
 
-    @bot.command(name="list", help="スピーカーとそのスタイルIDを表示します。")
+    @client.command(name="list", help="スピーカーとそのスタイルIDを表示します。")
     async def list(ctx):
         """スピーカーとそのスタイルIDを表示します。"""
         if not speakers_data:
@@ -37,7 +37,7 @@ def setup_commands(bot):
         else:
             await ctx.send(message)
 
-    @bot.command(name="join")
+    @client.command(name="join")
     async def join(ctx):
         if ctx.author.voice:
             channel = ctx.author.voice.channel
