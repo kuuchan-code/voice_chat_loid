@@ -1,6 +1,6 @@
 import discord
 
-BOT_PREFIX = "!"
+COMMAND_PREFIX = "!"
 GAME_NAME = "待機中"
 USER_DEFAULT_STYLE_ID = 3
 NOTIFY_DEFAULT_STYLE_ID = 8
