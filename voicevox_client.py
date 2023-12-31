@@ -19,19 +19,19 @@ def fetch_json(url):
 
 
 async def audio_query(text, style_id):
-    query_payload = {"text": text, "speaker": style_id}
+    params = {"text": text, "speaker": style_id}
     headers = {"Content-Type": "application/json"}
 
     # リクエスト詳細をログに記録
-    logging.debug(f"Sending audio query with payload: {query_payload}")
+    logging.debug(f"Sending audio query with params: {params}")
 
     async with aiohttp.ClientSession() as session:
         logging.debug(f"POST URL: {AUDIO_QUERY_URL}")
         logging.debug(f"Headers: {headers}")
-        logging.debug(f"Payload: {query_payload}")
+        logging.debug(f"Payload: {params}")
 
         async with session.post(
-            AUDIO_QUERY_URL, headers=headers, data=json.dumps(query_payload)  # jsonパラメータを使用
+            AUDIO_QUERY_URL, headers=headers, params=params
         ) as response:
             logging.debug(f"Response Status: {response.status}")
             logging.debug(f"Response Headers: {response.headers}")
