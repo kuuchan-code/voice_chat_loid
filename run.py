@@ -20,4 +20,4 @@ async def on_message(message):
         await message.channel.send("こんにちは!")
 
 
-client.run(os.getenv("VOICECHATLOID_TOKEN"))
+client.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
