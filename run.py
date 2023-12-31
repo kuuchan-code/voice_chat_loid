@@ -37,7 +37,7 @@ async def list(ctx):
             [f"{style['name']} (ID: {style['id']})" for style in speaker["styles"]]
         )
         if name == "†聖騎士 紅桜†":
-            message += f"[†聖騎士 紅桜†](https://voicevox.hiroshiba.jp/dormitory/horinaito_benizakura/): ノーマル (ID: 51)"
+            message += f"[聖騎士 紅桜](https://voicevox.hiroshiba.jp/dormitory/horinaito_benizakura/): ノーマル (ID: 51)"
         else:
             message += f"\n[{name}]({url}): {styles}"
 
