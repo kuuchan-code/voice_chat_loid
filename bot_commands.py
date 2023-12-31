@@ -10,10 +10,10 @@ from settings import (
 from voicevox_client import fetch_json
 
 
-def setup_commands(client):
+def setup_commands(bot):
     speakers_data = fetch_json(SPEAKERS_ENDPOINT)
 
-    @client.tree.command(
+    @bot.tree.command(
         name="list", guild=TEST_GUILD_ID, description="スピーカーとそのスタイルIDを表示します。"
     )
     async def list(interaction: discord.Interaction):
@@ -35,7 +35,7 @@ def setup_commands(client):
 
         await interaction.response.send_message(message)
 
-    @client.tree.command(name="join", guild=TEST_GUILD_ID)
+    @bot.tree.command(name="join", guild=TEST_GUILD_ID)
     async def join(interaction: discord.Interaction):
         if interaction.user.voice:
             channel = interaction.user.voice.channel
