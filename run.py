@@ -40,7 +40,7 @@ class ServerSettings:
             else:
                 query_data = await self.queue.get()
                 if query_data:
-                    audio = await synthesis(1, query_data)
+                    audio = await synthesis(3, query_data)
                     if audio:
                         self.voice_client.play(FFmpegPCMAudio(audio, pipe=True))
                 self.queue.task_done()
