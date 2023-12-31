@@ -129,18 +129,18 @@ async def on_message(message):
     if message.author == bot.user or not message.guild:
         return
 
-    text = message.content
+    text = message.content  # メッセージ内容を取得
     settings = server_settings.get(message.guild.id)
     if settings and settings.voice_client:
-        query_data = await audio_query(
-            text, settings.current_settings.get("style_id", USER_DEFAULT_STYLE_ID)
-        )
+        # ユーザーがスタイルIDを設定していない場合、デフォルトのIDを使用
+        style_id = settings.current_settings.get("style_id", USER_DEFAULT_STYLE_ID)
+        
+        # audio_query関数にtextとstyle_idを渡す
+        query_data = await audio_query(text, style_id)
         if query_data:
             await settings.queue.put(
                 {
-                    "style_id": settings.current_settings.get(
-                        "style_id", USER_DEFAULT_STYLE_ID
-                    ),
+                    "style_id": style_id,
                     "query_data": query_data,
                 }
             )
@@ -148,6 +148,7 @@ async def on_message(message):
                 await settings.play_next_in_queue()
 
     await bot.process_commands(message)
+
 
 
 @bot.command(name="skip")
