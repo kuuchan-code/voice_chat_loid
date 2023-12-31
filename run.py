@@ -16,6 +16,7 @@ from voicevox_client import audio_query, fetch_json, synthesis
 import asyncio
 from discord import FFmpegPCMAudio
 from discord.utils import get
+
 logging.basicConfig(level=logging.DEBUG)
 
 intents = discord.Intents.default()
@@ -25,6 +26,7 @@ bot = commands.Bot(intents=intents, command_prefix=COMMAND_PREFIX)
 
 speakers_data = fetch_json(SPEAKERS_URL)
 logging.debug(speakers_data)
+
 
 class ServerSettings:
     def __init__(self):
@@ -147,13 +149,13 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-
     settings = server_settings.get(message.guild.id)
-    # チャンネルIDが一致しない場合は無視
+    # チャンネルIDが一致しない、またはメッセージがコマンドプレフィックスで始まる場合は無視
     if (
         not settings
         or not settings.voice_client
         or message.channel.id != settings.text_channel_id
+        or message.content.startswith(COMMAND_PREFIX)
     ):
         return
 
@@ -172,7 +174,6 @@ async def on_message(message):
         )
         if not settings.voice_client.is_playing():
             await settings.play_next_in_queue()
-
 
 
 @bot.command(name="skip")
