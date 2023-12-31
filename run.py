@@ -39,7 +39,7 @@ async def join(ctx):
         await ctx.send("あなたはボイスチャンネルにいません。")
 
 
-@bot.command(name="list_styles", aliases=["ls"])
+@bot.command(name="ls")
 async def list_styles(ctx):
     """スピーカーとそのスタイルIDを表示します。"""
     if not speakers_data:
