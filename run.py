@@ -6,7 +6,6 @@ from bot_commands import setup_commands
 from settings import (
     COMMAND_PREFIX,
 )
-from voicevox_client import fetch_json
 
 logging.basicConfig(level=logging.INFO)
 
