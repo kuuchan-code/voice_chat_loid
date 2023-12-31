@@ -35,9 +35,7 @@ def setup_commands(bot):
 
         await interaction.response.send_message(message)
 
-    @bot.tree.command(
-        name="join", guild=TEST_GUILD_ID"
-    )
+    @bot.tree.command(name="join", guild=TEST_GUILD_ID)
     async def join(interaction: discord.Interaction):
         if interaction.user.voice:
             channel = interaction.user.voice.channel

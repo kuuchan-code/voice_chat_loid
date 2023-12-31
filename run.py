@@ -2,6 +2,7 @@ import os
 import discord
 import logging
 from discord.ext import commands
+from bot_commands import setup_commands
 from settings import (
     CHARACTORS_INFO,
     COMMAND_PREFIX,
@@ -20,6 +21,7 @@ bot = discord.Client(intents=intents)
 @bot.event
 async def on_ready():
     logging.info(f"ログインしました。ユーザー名: {bot.user.name}!")
+    setup_commands()
 
 
 bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
