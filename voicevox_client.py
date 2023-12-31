@@ -2,6 +2,7 @@ import json
 import aiohttp
 import requests
 import logging
+logging.basicConfig(level=logging.DEBUG)
 
 from settings import AUDIO_QUERY_URL, SYNTHESIS_URL
 
