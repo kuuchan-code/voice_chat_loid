@@ -17,8 +17,7 @@ def fetch_json(url):
 
 
 async def audio_query(text, style_id):
-    # 音声合成用のクエリを作成します。
-    query_payload = {"text": text, "speaker": style_id}
+    query_payload = {"text": text, "speaker": style_id}  # ペイロードに必要なデータを含める
     headers = {"Content-Type": "application/json"}
 
     async with aiohttp.ClientSession() as session:
@@ -27,7 +26,7 @@ async def audio_query(text, style_id):
         logging.debug(f"Payload: {query_payload}")
 
         async with session.post(
-            AUDIO_QUERY_URL, headers=headers, json=query_payload
+            AUDIO_QUERY_URL, headers=headers, json=query_payload  # jsonパラメータを使用
         ) as response:
             logging.debug(f"Response Status: {response.status}")
             logging.debug(f"Response Headers: {response.headers}")
@@ -39,6 +38,7 @@ async def audio_query(text, style_id):
                 error_detail = await response.text()
                 logging.error(f"Error in audio_query: {error_detail}")
                 return None
+
 
 
 
