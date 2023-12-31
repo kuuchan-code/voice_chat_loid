@@ -37,12 +37,22 @@ async def synthesis(style_id, query_data):
     synth_payload = {"speaker": style_id}
     headers = {"Content-Type": "application/json", "Accept": "audio/wav"}
     async with aiohttp.ClientSession() as session:
+        post_data = json.dumps(query_data)
+        logging.debug(f"POST URL: {SYNTHESIS_URL}")
+        logging.debug(f"Headers: {headers}")
+        logging.debug(f"Payload: {post_data}")
+
         async with session.post(
             SYNTHESIS_URL,
             headers=headers,
             params=synth_payload,
-            data=json.dumps(query_data),
+            data=post_data,
         ) as response:
+            logging.debug(f"Response Status: {response.status}")
+            logging.debug(f"Response Headers: {response.headers}")
             if response.status == 200:
                 return await response.read()
-            return None
+            else:
+                error_detail = await response.text()
+                logging.error(f"Error in synthesis: {error_detail}")
+                return None
