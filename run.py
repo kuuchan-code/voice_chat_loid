@@ -1,21 +1,19 @@
-import os
 import discord
 
-# Create an instance of a Client, this is your connection to Discord
-client = discord.Client()
+intents = discord.Intents.default()
 
-# Event listener for when the bot has switched from offline to online
+client = discord.Client(intents=intents)
+
 @client.event
 async def on_ready():
-    print(f'Logged in as {client.user}!')
+    print(f'ログインしました。ユーザー名: {client.user.name}!')
 
-# Event listener for when a message is sent to a channel the bot has access to
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
-    if message.content.startswith('!hello'):
-        await message.channel.send('Hello!')
 
-# Run the bot with the token
-client.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
+    if message.content.startswith('!hello'):
+        await message.channel.send('こんにちは!')
+
+client.run('YOUR_TOKEN')
