@@ -43,7 +43,7 @@ class ServerSettings:
                 if query_data:
                     audio = await synthesis(query_data['style_id'], query_data['query_data'])
                     if audio:
-                        self.voice_client.play(FFmpegPCMAudio(audio, pipe=True))
+                        self.voice_client.play(FFmpegPCMAudio(io.BytesIO(audio), pipe=True))
                 self.queue.task_done()
 
 
