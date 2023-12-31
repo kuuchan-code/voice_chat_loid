@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(intents=intents)
+bot = discord.Client(intents=intents)
 
 
 @bot.event
