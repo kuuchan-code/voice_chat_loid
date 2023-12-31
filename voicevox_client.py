@@ -1,5 +1,10 @@
+import json
+import aiohttp
 import requests
 import logging
+
+from settings import AUDIO_QUERY_URL, SYNTHESIS_URL
+
 
 def fetch_json(url):
     try:
@@ -9,3 +14,35 @@ def fetch_json(url):
     except requests.RequestException as e:
         logging.error(f"リクエスト中にエラーが発生しました: {e}")
         return None
+
+
+async def audio_query(text, style_id):
+    # 音声合成用のクエリを作成します。
+    query_payload = {"text": text, "speaker": style_id}
+    headers = {"Content-Type": "application/json"}
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            AUDIO_QUERY_URL, headers=headers, params=query_payload
+        ) as response:
+            if response.status == 200:
+                return await response.json()
+            elif response.status == 422:
+                error_detail = await response.text()
+                print(f"処理できないエンティティ: {error_detail}")
+                return None
+
+
+async def synthesis(style_id, query_data):
+    # 音声合成を行います。
+    synth_payload = {"speaker": style_id}
+    headers = {"Content-Type": "application/json", "Accept": "audio/wav"}
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            SYNTHESIS_URL,
+            headers=headers,
+            params=synth_payload,
+            data=json.dumps(query_data),
+        ) as response:
+            if response.status == 200:
+                return await response.read()
+            return None
