@@ -30,17 +30,17 @@ async def list(ctx):
     # メッセージを整形して作成
     message = "**利用可能なスピーカーとスタイル:**\n"
     for speaker in speakers_data:
-        name = speaker["name"]
-        character_id = CHARACTORS_INFO.get(name, "unknown")  # キャラクターIDを取得
-        url = f"https://voicevox.hiroshiba.jp/dormitory/{character_id}/"
-        styles = ", ".join(
-            [f"{style['name']} (ID: {style['id']})" for style in speaker["styles"]]
-        )
         if name == "ナースロボ＿タイプＴ":
-            message += ""
+            pass
         elif name == "†聖騎士 紅桜†":
-            message += ""
+            pass
         else:
+            name = speaker["name"]
+            character_id = CHARACTORS_INFO.get(name, "unknown")  # キャラクターIDを取得
+            url = f"https://voicevox.hiroshiba.jp/dormitory/{character_id}/"
+            styles = ", ".join(
+                [f"{style['name']} (ID: {style['id']})" for style in speaker["styles"]]
+            )
             message += f"\n[{name}]({url}): {styles}"
 
     # メッセージの長さが2000文字を超えないように調整
