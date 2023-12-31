@@ -40,9 +40,8 @@ class ServerSettings:
 
     async def play_next_in_queue(self):
         while True:
-            if self.voice_client.is_playing():
-                await asyncio.sleep(1)
-            else:
+            # voice_clientが再生中でないことを確認
+            if not self.voice_client.is_playing() and not self.voice_client.is_paused():
                 query_data = await self.queue.get()
                 if query_data:
                     audio = await synthesis(
@@ -53,13 +52,16 @@ class ServerSettings:
                         self.voice_client.play(source)
 
                         # 再生が完了したことを確認
-                        while self.voice_client.is_playing():
+                        while self.voice_client.is_playing() or self.voice_client.is_paused():
                             await asyncio.sleep(1)
 
                         try:
                             source.cleanup()
                         except Exception as e:
                             logging.error(f"Error cleaning up audio source: {e}")
+            else:
+                # voice_clientが再生中の場合、少し待って再度チェック
+                await asyncio.sleep(1)
 
 
 server_settings = {}
