@@ -13,7 +13,7 @@ intents.message_content = True
 bot = commands.Bot(intents=intents, command_prefix=COMMAND_PREFIX)
 
 speakers_data = fetch_json(SPEAKERS_ENDPOINT)
-
+print(speakers_data = fetch_json(SPEAKERS_ENDPOINT))
 
 @bot.event
 async def on_ready():
