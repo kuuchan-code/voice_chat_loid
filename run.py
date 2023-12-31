@@ -40,12 +40,18 @@ class ServerSettings:
                 await asyncio.sleep(1)
             else:
                 query_data = await self.queue.get()
-                print(query_data)
                 if query_data:
                     audio = await synthesis(query_data['style_id'], query_data['query_data'])
                     if audio:
-                        self.voice_client.play(FFmpegPCMAudio(io.BytesIO(audio), pipe=True))
-                self.queue.task_done()
+                        source = FFmpegPCMAudio(io.BytesIO(audio), pipe=True)
+                        self.voice_client.play(source)
+
+                        # 再生が完了したことを確認
+                        while self.voice_client.is_playing():
+                            await asyncio.sleep(1)
+
+                        # 明示的にクリーンアップ
+                        source.cleanup()
 
 
 server_settings = {}
