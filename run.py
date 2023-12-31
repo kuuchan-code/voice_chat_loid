@@ -1,4 +1,5 @@
 import io
+import logging
 import os
 import discord
 
@@ -23,6 +24,7 @@ bot = commands.Bot(intents=intents, command_prefix=COMMAND_PREFIX)
 
 speakers_data = fetch_json(SPEAKERS_URL)
 print(speakers_data)
+logging.basicConfig(level=logging.DEBUG)
 
 
 class ServerSettings:
@@ -41,7 +43,9 @@ class ServerSettings:
             else:
                 query_data = await self.queue.get()
                 if query_data:
-                    audio = await synthesis(query_data['style_id'], query_data['query_data'])
+                    audio = await synthesis(
+                        query_data["style_id"], query_data["query_data"]
+                    )
                     if audio:
                         source = FFmpegPCMAudio(io.BytesIO(audio), pipe=True)
                         self.voice_client.play(source)
@@ -50,8 +54,10 @@ class ServerSettings:
                         while self.voice_client.is_playing():
                             await asyncio.sleep(1)
 
-                        # 明示的にクリーンアップ
-                        source.cleanup()
+                        try:
+                            source.cleanup()
+                        except Exception as e:
+                            logging.error(f"Error cleaning up audio source: {e}")
 
 
 server_settings = {}
@@ -142,7 +148,7 @@ async def on_message(message):
     if settings and settings.voice_client:
         # ユーザーがスタイルIDを設定していない場合、デフォルトのIDを使用
         style_id = settings.current_settings.get("style_id", USER_DEFAULT_STYLE_ID)
-        
+
         # audio_query関数にtextとstyle_idを渡す
         query_data = await audio_query(text, style_id)
         if query_data:
@@ -156,7 +162,6 @@ async def on_message(message):
                 await settings.play_next_in_queue()
 
     await bot.process_commands(message)
-
 
 
 @bot.command(name="skip")
