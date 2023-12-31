@@ -4,7 +4,7 @@ import os
 from utils import fetch_json, handle_message, handle_voice_state_update
 from voice import process_playback_queue
 from bot_commands import setup_commands
-from settings import APPROVED_GUILD_IDS, BOT_PREFIX, GAME_NAME
+from settings import APPROVED_GUILD_IDS, BOT_PREFIX, GAME_NAME, TEST_GUILD_ID
 
 if __name__ == "__main__":
     # Initialize bot with intents and prefix
@@ -22,8 +22,7 @@ if __name__ == "__main__":
     async def on_ready():
         print(f"Logged in as {bot.user.name}")
         # 各承認されたギルドでコマンドを同期
-        for guild in APPROVED_GUILD_IDS:
-            await bot.tree.sync(guild=guild)
+        bot.tree.sync(guild=TEST_GUILD_ID)
         for guild in bot.guilds:
             bot.loop.create_task(process_playback_queue(str(guild.id)))
 
