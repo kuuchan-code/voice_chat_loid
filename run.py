@@ -17,16 +17,9 @@ intents.message_content = True
 bot = commands.Bot(intents=intents)
 
 
-
 @bot.event
 async def on_ready():
     logging.info(f"ログインしました。ユーザー名: {bot.user.name}!")
-
-
-
-@bot.command(name="ls")
-async def list_styles(ctx):
-
 
 
 bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
