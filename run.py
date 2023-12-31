@@ -15,10 +15,17 @@ bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=intents)
 
 @bot.event
 async def on_ready():
+    speakers_data = await fetch_json(SPEAKERS_ENDPOINT)
+
+    if speakers_data:
+        logging.info(speakers_data)
+    else:
+        logging.error("データの取得に失敗しました。")
+
     logging.info(f"ログインしました。ユーザー名: {bot.user.name}!")
 
 
-@bot.command(name='join')
+@bot.command(name="join")
 async def join(ctx):
     if ctx.author.voice:
         channel = ctx.author.voice.channel
@@ -27,11 +34,5 @@ async def join(ctx):
     else:
         await ctx.send("あなたはボイスチャンネルにいません。")
 
-speakers_data = fetch_json(SPEAKERS_ENDPOINT)
-
-if speakers_data:
-    logging.info(speakers_data)
-else:
-    logging.error("データの取得に失敗しました。")
 
 bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
