@@ -1,7 +1,8 @@
 import os
 import discord
 
-from settings import COMMAND_PREFIX
+from settings import COMMAND_PREFIX, SPEAKERS_URL
+from voicevox_client import fetch_json
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -31,3 +32,11 @@ async def on_message(message):
 
 
 client.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
+
+
+speakers_data = fetch_json(SPEAKERS_URL)
+
+if speakers_data:
+    print(speakers_data)  # JSONデータを表示
+else:
+    print("データの取得に失敗しました。")
