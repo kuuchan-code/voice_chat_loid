@@ -23,15 +23,4 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    # VCに接続するコマンド
-    if message.content.startswith(f"{COMMAND_PREFIX}join"):
-        # メッセージを送信したユーザーがVCにいるか確認
-        if message.author.voice:
-            channel = message.author.voice.channel
-            await channel.connect()  # VCに接続
-            await message.channel.send(f"{channel.name}に接続しました。")
-        else:
-            await message.channel.send("あなたはボイスチャンネルにいません。")
-
-
 bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
