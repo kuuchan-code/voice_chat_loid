@@ -20,16 +20,26 @@ async def audio_query(text, style_id):
     # 音声合成用のクエリを作成します。
     query_payload = {"text": text, "speaker": style_id}
     headers = {"Content-Type": "application/json"}
+
     async with aiohttp.ClientSession() as session:
+        logging.debug(f"POST URL: {AUDIO_QUERY_URL}")
+        logging.debug(f"Headers: {headers}")
+        logging.debug(f"Payload: {query_payload}")
+
         async with session.post(
-            AUDIO_QUERY_URL, headers=headers, params=query_payload
+            AUDIO_QUERY_URL, headers=headers, json=query_payload
         ) as response:
+            logging.debug(f"Response Status: {response.status}")
+            logging.debug(f"Response Headers: {response.headers}")
             if response.status == 200:
-                return await response.json()
-            elif response.status == 422:
+                response_data = await response.json()
+                logging.debug(f"Response Data: {response_data}")
+                return response_data
+            else:
                 error_detail = await response.text()
-                print(f"処理できないエンティティ: {error_detail}")
+                logging.error(f"Error in audio_query: {error_detail}")
                 return None
+
 
 
 async def synthesis(style_id, query_data):
