@@ -13,18 +13,19 @@ intents.message_content = True
 
 bot = commands.Bot(intents=intents, command_prefix=COMMAND_PREFIX)
 
+speakers_data = fetch_json(SPEAKERS_ENDPOINT)
+
 
 @bot.event
 async def on_ready():
     print(f"ログインしました。ユーザー名: {bot.user.name}!")
 
 
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return
-    
-speakers_data = fetch_json(SPEAKERS_ENDPOINT)
+# @bot.event
+# async def on_message(message):
+#     if message.author == bot.user:
+#         return
+
 
 @bot.command(name="list", help="スピーカーとそのスタイルIDを表示します。")
 async def list(ctx):
@@ -51,6 +52,7 @@ async def list(ctx):
     else:
         await ctx.send(message)
 
+
 @bot.command(name="join")
 async def join(ctx):
     if ctx.author.voice:
@@ -59,5 +61,6 @@ async def join(ctx):
         await ctx.send(f"{channel.name}に接続しました。")
     else:
         await ctx.send("あなたはボイスチャンネルにいません。")
+
 
 bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
