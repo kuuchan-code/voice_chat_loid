@@ -39,6 +39,7 @@ class ServerSettings:
                 await asyncio.sleep(1)
             else:
                 query_data = await self.queue.get()
+                print(query_data)
                 if query_data:
                     audio = await synthesis(3, query_data)
                     if audio:
