@@ -34,7 +34,7 @@ async def list(ctx):
         character_id = CHARACTORS_INFO.get(name, "unknown")  # キャラクターIDを取得
         url = f"https://voicevox.hiroshiba.jp/dormitory/{character_id}/"
         styles = ", ".join(
-            [f"{style['name']} (ID: {style['id']})" for style in speaker["styles"]]
+            [f"{style['name']} (ID: {style['id']})" for style in speaker["styles"][:20]]
         )
         message += f"\n[{name}]({url}): {styles}"
 
