@@ -20,6 +20,14 @@ async def on_ready():
     print(f"ログインしました。ユーザー名: {bot.user.name}!")
 
 
+def escape_markdown(text):
+    """DiscordのMarkdown特殊文字をエスケープします。"""
+    # Discordでフォーマットとして解釈される可能性のある特殊文字をエスケープ
+    markdown_chars = ["\\", "*", "_", "~", "`", "|", "{", "}", "[", "]", "(", ")", "#", "+", "-", ".", "!", "†"]
+    for char in markdown_chars:
+        text = text.replace(char, "\\" + char)
+    return text
+
 @bot.command(name="list", help="スピーカーとそのスタイルIDを表示します。")
 async def list(ctx):
     """スピーカーとそのスタイルIDを表示します。"""
@@ -30,11 +38,11 @@ async def list(ctx):
     # メッセージを整形して作成
     message = "**利用可能なスピーカーとスタイル:**\n"
     for speaker in speakers_data:
-        name = speaker["name"]
+        name = escape_markdown(speaker["name"])
         character_id = CHARACTORS_INFO.get(name, "unknown")  # キャラクターIDを取得
         url = f"https://voicevox.hiroshiba.jp/dormitory/{character_id}/"
         styles = ", ".join(
-            [f"{style['name']} (ID: {style['id']})" for style in speaker["styles"]]
+            [f"{escape_markdown(style['name'])} (ID: {style['id']})" for style in speaker["styles"]]
         )
         message += f"\n[{name}]({url}): {styles}"
 
@@ -44,6 +52,7 @@ async def list(ctx):
         await ctx.send(message[2000:])
     else:
         await ctx.send(message)
+
 
 
 @bot.command(name="join")
