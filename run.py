@@ -44,11 +44,11 @@ async def list(ctx):
             message += f"\n[{name}]({url}): {styles}"
 
     # メッセージの長さが2000文字を超えないように調整
-    if len(message) > 2000:
-        await ctx.send(message[:2000])
-        await ctx.send(message[2000:])
-    else:
-        await ctx.send(message)
+    # if len(message) > 2000:
+    #     await ctx.send(message[:2000])
+    #     await ctx.send(message[2000:])
+    # else:
+    await ctx.send(message)
 
 
 @bot.command(name="join")
