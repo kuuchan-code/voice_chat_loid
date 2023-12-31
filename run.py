@@ -31,12 +31,12 @@ async def on_message(message):
             await message.channel.send("あなたはボイスチャンネルにいません。")
 
 
-client.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
-
-
 speakers_data = fetch_json(SPEAKERS_URL)
 
 if speakers_data:
     print(speakers_data)  # JSONデータを表示
 else:
     print("データの取得に失敗しました。")
+
+
+client.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
