@@ -9,6 +9,7 @@ from settings import (
 )
 from voicevox_client import fetch_json
 
+
 def setup_commands(bot):
     speakers_data = fetch_json(SPEAKERS_ENDPOINT)
 
@@ -33,3 +34,14 @@ def setup_commands(bot):
             message += f"\n[{name}]({url}): {styles}"
 
         await interaction.response.send_message(message)
+
+    @bot.tree.command(
+        name="join", guild=TEST_GUILD_ID"
+    )
+    async def join(interaction: discord.Interaction):
+        if interaction.user.voice:
+            channel = interaction.user.voice.channel
+            await channel.connect()
+            await interaction.response.send_message(f"{channel.name}に接続しました。")
+        else:
+            await interaction.response.send_message("あなたはボイスチャンネルにいません。")
