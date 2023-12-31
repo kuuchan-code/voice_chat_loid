@@ -28,7 +28,7 @@ async def audio_query(text, style_id):
     async with aiohttp.ClientSession() as session:
         logging.debug(f"POST URL: {AUDIO_QUERY_URL}")
         logging.debug(f"Headers: {headers}")
-        logging.debug(f"Payload: {params}")
+        logging.debug(f"Params: {params}")
 
         async with session.post(
             AUDIO_QUERY_URL, headers=headers, params=params
