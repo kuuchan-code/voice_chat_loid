@@ -144,19 +144,14 @@ async def on_message(message):
         return
 
     settings = server_settings.get(message.guild.id)
-    # チャンネルIDが一致しない、またはメッセージがコマンドプレフィックスで始まる場合は無視
-    if (
-        not settings
-        or not settings.voice_client
-        or message.channel.id != settings.text_channel_id
-        or message.content.startswith(COMMAND_PREFIX)
-    ):
+    # チャンネルIDが一致しない場合は無視
+    if not settings or not settings.voice_client or message.channel.id != settings.text_channel_id:
         return
 
     text = message.content  # メッセージ内容を取得
     # ユーザーがスタイルIDを設定していない場合、デフォルトのIDを使用
     style_id = settings.current_settings.get("style_id", USER_DEFAULT_STYLE_ID)
-
+    
     # audio_query関数にtextとstyle_idを渡す
     query_data = await audio_query(text, style_id)
     if query_data:
@@ -170,6 +165,7 @@ async def on_message(message):
             await settings.play_next_in_queue()
 
     await bot.process_commands(message)
+
 
 
 @bot.command(name="skip")
