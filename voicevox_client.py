@@ -1,12 +1,11 @@
-import aiohttp
+import requests
 import logging
 
-async def fetch_json(url):
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(url) as response:
-                response.raise_for_status()
-                return await response.json()
-        except aiohttp.ClientError as e:
-            logging.error(f"リクエスト中にエラーが発生しました: {e}")
-            return None
+def fetch_json(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        logging.error(f"リクエスト中にエラーが発生しました: {e}")
+        return None
