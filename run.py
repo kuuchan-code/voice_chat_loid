@@ -6,7 +6,6 @@ from settings import (
     CHARACTORS_INFO,
     COMMAND_PREFIX,
     SPEAKERS_ENDPOINT,
-    VOICEVOX_BLOG_CONSTANS_URL,
 )
 from voicevox_client import fetch_json
 
