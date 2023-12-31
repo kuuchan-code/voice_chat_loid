@@ -2,7 +2,8 @@ import os
 import discord
 import logging
 from discord.ext import commands
-from settings import COMMAND_PREFIX, SPEAKERS_ENDPOINT
+from settings import COMMAND_PREFIX, SPEAKERS_ENDPOINT, VOICEVOX_BLOG_CONSTANS_URL
+from utils import fetch_character_infos
 from voicevox_client import fetch_json
 
 logging.basicConfig(level=logging.INFO)
@@ -12,16 +13,25 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=intents)
 
+speakers_data = fetch_json(SPEAKERS_ENDPOINT)
+
+if speakers_data:
+    logging.info(speakers_data)
+else:
+    logging.error("データの取得に失敗しました。")
+
+# 関数を実行し結果を取得
+character_infos = fetch_character_infos(VOICEVOX_BLOG_CONSTANS_URL)
+if character_infos:
+    # character_infosの中身を確認
+    for key, value in character_infos.items():
+        print(f"{key}: {value}")
+else:
+    print("キャラクター情報を取得できませんでした。")
+
 
 @bot.event
 async def on_ready():
-    speakers_data = await fetch_json(SPEAKERS_ENDPOINT)
-
-    if speakers_data:
-        logging.info(speakers_data)
-    else:
-        logging.error("データの取得に失敗しました。")
-
     logging.info(f"ログインしました。ユーザー名: {bot.user.name}!")
 
 
@@ -37,9 +47,7 @@ async def join(ctx):
 
 @bot.command(name="list_styles", aliases=["ls"])
 async def list_styles(ctx):
-    """スピーカーとそのスタイルを表示します。"""
-    speakers_data = await fetch_json(SPEAKERS_ENDPOINT)  # 非同期でJSONデータを取得
-
+    """スピーカーとそのスタイルIDを表示します。"""
     if not speakers_data:
         await ctx.send("スピーカーのデータを取得できませんでした。")
         return
@@ -48,8 +56,12 @@ async def list_styles(ctx):
     message = "**利用可能なスピーカーとスタイル:**\n"
     for speaker in speakers_data:
         name = speaker["name"]
-        styles = ", ".join([style["name"] for style in speaker["styles"]])
-        message += f"\n**{name}**: {styles}"
+        character_id = character_infos.get(name, "unknown")  # キャラクターIDを取得
+        url = f"https://voicevox.hiroshiba.jp/dormitory/{character_id}/"
+        styles = ", ".join(
+            [f"{style['name']} (ID: {style['id']})" for style in speaker["styles"]]
+        )
+        message += f"\n[{name}]({url}): {styles}"
 
     # メッセージの長さが2000文字を超えないように調整
     if len(message) > 2000:
