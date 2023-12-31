@@ -25,7 +25,11 @@ def fetch_character_infos(url):
             except json.JSONDecodeError as e:
                 print(f"JSONデコードエラー: {e}")
                 print(character_infos_json)  # エラーが発生したJSONを出力
-                return None
+                # 特定の行を出力して問題を特定
+                lines = character_infos_json.split("\n")
+                if len(lines) > 56:
+                    print("問題のある行:", lines[55])  # 行は0から始まるので56行目は55となる
+
     else:
         print("データを取得できませんでした。ステータスコード:", response.status_code)
         return None
