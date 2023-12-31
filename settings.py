@@ -1,6 +1,3 @@
-import discord
-
-
 COMMAND_PREFIX = "!"
 GAME_NAME = f"待機中 | {COMMAND_PREFIX}helpでコマンド説明を表示"
 USER_DEFAULT_STYLE_ID = 3
@@ -10,7 +7,6 @@ VOICEVOX_ENGINE_URL = "http://127.0.0.1:50021/"
 SPEAKERS_ENDPOINT = VOICEVOX_ENGINE_URL + "speakers"
 AUDIO_QUERY_ENDPOINT = VOICEVOX_ENGINE_URL + "audio_query"
 SYNTHESIS_ENDPOINT = VOICEVOX_ENGINE_URL + "synthesis"
-TEST_GUILD_ID = discord.Object(id="1189256965172514836")
 # https://raw.githubusercontent.com/VOICEVOX/voicevox_blog/master/src/constants.ts
 CHARACTORS_INFO = {
     "四国めたん": "shikoku_metan",

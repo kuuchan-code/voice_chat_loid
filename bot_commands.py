@@ -1,4 +1,3 @@
-import asyncio
 import discord
 from settings import (
     CHARACTORS_INFO,
@@ -13,13 +12,11 @@ from voicevox_client import fetch_json
 def setup_commands(bot):
     speakers_data = fetch_json(SPEAKERS_ENDPOINT)
 
-    @bot.tree.command(
-        name="list", guild=TEST_GUILD_ID, description="スピーカーとそのスタイルIDを表示します。"
-    )
-    async def list(interaction: discord.Interaction):
+    @bot.command(name="list", help="スピーカーとそのスタイルIDを表示します。")
+    async def list(ctx):
         """スピーカーとそのスタイルIDを表示します。"""
         if not speakers_data:
-            await interaction.response.send_message("スピーカーのデータを取得できませんでした。")
+            await ctx.send("スピーカーのデータを取得できませんでした。")
             return
 
         # メッセージを整形して作成
@@ -33,13 +30,18 @@ def setup_commands(bot):
             )
             message += f"\n[{name}]({url}): {styles}"
 
-        await interaction.response.send_message(message)
-
-    @bot.tree.command(name="join", guild=TEST_GUILD_ID)
-    async def join(interaction: discord.Interaction):
-        if interaction.user.voice:
-            channel = interaction.user.voice.channel
-            await channel.connect()
-            await interaction.response.send_message(f"{channel.name}に接続しました。")
+        # メッセージの長さが2000文字を超えないように調整
+        if len(message) > 2000:
+            await ctx.send(message[:2000])
+            await ctx.send(message[2000:])
         else:
-            await interaction.response.send_message("あなたはボイスチャンネルにいません。")
+            await ctx.send(message)
+
+    @bot.command(name="join")
+    async def join(ctx):
+        if ctx.author.voice:
+            channel = ctx.author.voice.channel
+            await channel.connect()
+            await ctx.send(f"{channel.name}に接続しました。")
+        else:
+            await ctx.send("あなたはボイスチャンネルにいません。")

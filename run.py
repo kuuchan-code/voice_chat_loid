@@ -1,26 +1,34 @@
 import os
 import discord
-import logging
-from discord.ext import commands
-from bot_commands import setup_commands
-from settings import (
-    COMMAND_PREFIX,
-    TEST_GUILD_ID,
-)
 
-logging.basicConfig(level=logging.INFO)
+from settings import COMMAND_PREFIX
+from voicevox_client import fetch_json
 
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(intents=intents, command_prefix=COMMAND_PREFIX)
-setup_commands(bot)
+client = discord.Client(intents=intents, command_prefix=COMMAND_PREFIX)
 
 
-@bot.event
+@client.event
 async def on_ready():
-    logging.info(f"ログインしました。ユーザー名: {bot.user.name}!")
-    await bot.tree.sync(guild=TEST_GUILD_ID)
+    print(f"ログインしました。ユーザー名: {client.user.name}!")
 
 
-bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    # VCに接続するコマンド
+    if message.content.startswith(f"{COMMAND_PREFIX}join"):
+        # メッセージを送信したユーザーがVCにいるか確認
+        if message.author.voice:
+            channel = message.author.voice.channel
+            await channel.connect()  # VCに接続
+            await message.channel.send(f"{channel.name}に接続しました。")
+        else:
+            await message.channel.send("あなたはボイスチャンネルにいません。")
+
+
+client.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
