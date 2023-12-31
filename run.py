@@ -4,7 +4,7 @@ import discord
 from settings import (
     CHARACTORS_INFO,
     COMMAND_PREFIX,
-    SPEAKERS_ENDPOINT,
+    SPEAKERS_URL,
     USER_DEFAULT_STYLE_ID,
 )
 from discord.ext import commands
@@ -20,7 +20,7 @@ intents.message_content = True
 
 bot = commands.Bot(intents=intents, command_prefix=COMMAND_PREFIX)
 
-speakers_data = fetch_json(SPEAKERS_ENDPOINT)
+speakers_data = fetch_json(SPEAKERS_URL)
 print(speakers_data)
 
 
