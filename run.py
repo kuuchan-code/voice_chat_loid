@@ -3,22 +3,24 @@ import discord
 from bot_commands import setup_commands
 
 from settings import COMMAND_PREFIX
-from voicevox_client import fetch_json
+from discord.ext import commands
+
 
 intents = discord.Intents.default()
 intents.message_content = True
 
-client = discord.Client(intents=intents, command_prefix=COMMAND_PREFIX)
-setup_commands(client)
+bot = commands.Bot(intents=intents, command_prefix=COMMAND_PREFIX)
+setup_commands(bot)
 
-@client.event
+
+@bot.event
 async def on_ready():
-    print(f"ログインしました。ユーザー名: {client.user.name}!")
+    print(f"ログインしました。ユーザー名: {bot.user.name}!")
 
 
-@client.event
+@bot.event
 async def on_message(message):
-    if message.author == client.user:
+    if message.author == bot.user:
         return
 
     # VCに接続するコマンド
@@ -32,4 +34,4 @@ async def on_message(message):
             await message.channel.send("あなたはボイスチャンネルにいません。")
 
 
-client.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
+bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
