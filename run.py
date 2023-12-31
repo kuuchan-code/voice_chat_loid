@@ -122,11 +122,14 @@ async def join(ctx):
             await voice_client.move_to(channel)
         else:
             voice_client = await channel.connect()
+
+        # サーバーIDを使用して、そのサーバーの設定を取得または新規作成
         if ctx.guild.id not in server_settings:
             server_settings[ctx.guild.id] = ServerSettings()
+
         settings = server_settings[ctx.guild.id]
         settings.voice_client = voice_client
-        settings.text_channel_id = ctx.channel.id  # テキストチャンネルIDを保存
+        settings.text_channel_id = ctx.channel.id
         await ctx.send(f"{channel.name}に接続しました。")
     else:
         await ctx.send("あなたはボイスチャンネルにいません。")
