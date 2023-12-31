@@ -2,7 +2,6 @@ import discord
 from settings import (
     CHARACTORS_INFO,
     SPEAKERS_ENDPOINT,
-    TEST_GUILD_ID,
     USER_DEFAULT_STYLE_ID,
     NOTIFY_DEFAULT_STYLE_ID,
 )
