@@ -2,8 +2,12 @@ import os
 import discord
 import logging
 from discord.ext import commands
-from settings import COMMAND_PREFIX, SPEAKERS_ENDPOINT, VOICEVOX_BLOG_CONSTANS_URL
-from utils import fetch_character_infos
+from settings import (
+    CHARACTORS_INFO,
+    COMMAND_PREFIX,
+    SPEAKERS_ENDPOINT,
+    VOICEVOX_BLOG_CONSTANS_URL,
+)
 from voicevox_client import fetch_json
 
 logging.basicConfig(level=logging.INFO)
@@ -19,15 +23,6 @@ if speakers_data:
     logging.info(speakers_data)
 else:
     logging.error("データの取得に失敗しました。")
-
-# 関数を実行し結果を取得
-character_infos = fetch_character_infos(VOICEVOX_BLOG_CONSTANS_URL)
-if character_infos:
-    # character_infosの中身を確認
-    for key, value in character_infos.items():
-        print(f"{key}: {value}")
-else:
-    print("キャラクター情報を取得できませんでした。")
 
 
 @bot.event
@@ -56,7 +51,7 @@ async def list_styles(ctx):
     message = "**利用可能なスピーカーとスタイル:**\n"
     for speaker in speakers_data:
         name = speaker["name"]
-        character_id = character_infos.get(name, "unknown")  # キャラクターIDを取得
+        character_id = CHARACTORS_INFO.get(name, "unknown")  # キャラクターIDを取得
         url = f"https://voicevox.hiroshiba.jp/dormitory/{character_id}/"
         styles = ", ".join(
             [f"{style['name']} (ID: {style['id']})" for style in speaker["styles"]]
