@@ -86,7 +86,7 @@ async def speak_line(voice_client, line, style_id, guild_id):
     if query_data:
         voice_data = await synthesis(style_id, query_data)
         if voice_data:
-            audio_source = discord.FFmpegPCMAudio(io.BytesIO(voice_data), pipe=True)
+            audio_source = discord.FFmpegPCMAudio(voice_data, pipe=True)
             voice_client.play(audio_source)
 
             # Wait for the current audio to finish playing before returning
