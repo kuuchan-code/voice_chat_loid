@@ -129,24 +129,23 @@ async def on_message(message):
     if message.author == bot.user or not message.guild:
         return
 
-    if bot.user in message.mentions:  # ボットがメンションされた時
-        text = message.content
-        settings = server_settings.get(message.guild.id)
-        if settings and settings.voice_client:
-            query_data = await audio_query(
-                text, settings.current_settings.get("style_id", USER_DEFAULT_STYLE_ID)
+    text = message.content
+    settings = server_settings.get(message.guild.id)
+    if settings and settings.voice_client:
+        query_data = await audio_query(
+            text, settings.current_settings.get("style_id", USER_DEFAULT_STYLE_ID)
+        )
+        if query_data:
+            await settings.queue.put(
+                {
+                    "style_id": settings.current_settings.get(
+                        "style_id", USER_DEFAULT_STYLE_ID
+                    ),
+                    "query_data": query_data,
+                }
             )
-            if query_data:
-                await settings.queue.put(
-                    {
-                        "style_id": settings.current_settings.get(
-                            "style_id", USER_DEFAULT_STYLE_ID
-                        ),
-                        "query_data": query_data,
-                    }
-                )
-                if not settings.voice_client.is_playing():
-                    await settings.play_next_in_queue()
+            if not settings.voice_client.is_playing():
+                await settings.play_next_in_queue()
 
     await bot.process_commands(message)
 
