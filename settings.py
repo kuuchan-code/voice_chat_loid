@@ -17,6 +17,8 @@ APPROVED_GUILD_IDS = [
     # discord.Object(id="他のギルドID"),
     # ...
 ]
+TEST_GUILD_ID = (discord.Object(id="1189256965172514836"),)  # 既存のギルドID
+
 
 # https://raw.githubusercontent.com/VOICEVOX/voicevox_blog/master/src/constants.ts
 CHARACTORS_INFO = {

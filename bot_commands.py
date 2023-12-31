@@ -2,6 +2,7 @@ import discord
 from settings import (
     APPROVED_GUILD_IDS,
     CHARACTORS_INFO,
+    TEST_GUILD_ID,
     USER_DEFAULT_STYLE_ID,
     ANNOUNCEMENT_DEFAULT_STYLE_ID,
 )
@@ -26,7 +27,11 @@ class PaginationView(View):
         super().__init__()
         self.speakers = speakers
         self.page = page
-        self.total_pages = max(1, len(speakers) // ITEMS_PER_PAGE + (1 if len(speakers) % ITEMS_PER_PAGE > 0 else 0))
+        self.total_pages = max(
+            1,
+            len(speakers) // ITEMS_PER_PAGE
+            + (1 if len(speakers) % ITEMS_PER_PAGE > 0 else 0),
+        )
 
     @discord.ui.button(label="前へ", style=discord.ButtonStyle.primary)
     async def previous(self, interaction: discord.Interaction, button: Button):
@@ -142,7 +147,8 @@ async def handle_voice_config_command(interaction, style_id: int, voice_scope: s
             valid, speaker_name, style_name = validate_style_id(style_id)
             if not valid:
                 await interaction.response.send_message(
-                    f"スタイルID {style_id} は無効です。`/list`で有効なIDを確認し、正しいIDを入力してください。", ephemeral=True
+                    f"スタイルID {style_id} は無効です。`/list`で有効なIDを確認し、正しいIDを入力してください。",
+                    ephemeral=True,
                 )
                 return
             update_style_setting(guild_id, user_id, style_id, voice_scope)
@@ -187,7 +193,7 @@ def get_current_style_details(guild_id, user_id, voice_scope):
 
 def setup_commands(bot):
     @bot.tree.command(
-        name="leave", guilds=APPROVED_GUILD_IDS, description="ボットをボイスチャンネルから切断します。"
+        name="leave", guild=TEST_GUILD_ID, description="ボットをボイスチャンネルから切断します。"
     )
     async def leave(interaction: discord.Interaction):
         if interaction.guild.voice_client:
@@ -200,7 +206,7 @@ def setup_commands(bot):
 
     @bot.tree.command(
         name="voice_config",
-        guilds=APPROVED_GUILD_IDS,
+        guild=TEST_GUILD_ID,
         description="あなたのテキスト読み上げキャラクターを設定します。",
     )
     async def voice_config(interaction: discord.Interaction, style_id: int):
@@ -208,7 +214,7 @@ def setup_commands(bot):
 
     @bot.tree.command(
         name="server_voice_config",
-        guilds=APPROVED_GUILD_IDS,
+        guild=TEST_GUILD_ID,
         description="サーバーのテキスト読み上げキャラクターを表示また設定します。",
     )
     @app_commands.choices(
@@ -223,7 +229,7 @@ def setup_commands(bot):
         await handle_voice_config_command(interaction, style_id, voice_scope)
 
     @bot.tree.command(
-        name="join", guilds=APPROVED_GUILD_IDS, description="ボットをボイスチャンネルに接続し、読み上げを開始します。"
+        name="join", guild=TEST_GUILD_ID, description="ボットをボイスチャンネルに接続し、読み上げを開始します。"
     )
     async def join(interaction: discord.Interaction):
         # defer the response to keep the interaction alive
@@ -264,10 +270,15 @@ def setup_commands(bot):
                 announcement_speaker_name, announcement_style_name = get_style_details(
                     announcement_style_id
                 )
-                announcement_character_id, announcement_display_name = get_character_info(announcement_speaker_name)
+                (
+                    announcement_character_id,
+                    announcement_display_name,
+                ) = get_character_info(announcement_speaker_name)
                 announcement_url = f"https://voicevox.hiroshiba.jp/dormitory/{announcement_character_id}/"
                 user_speaker_name, user_style_name = get_style_details(user_style_id)
-                user_character_id, user_tts_display_name = get_character_info(user_speaker_name)
+                user_character_id, user_tts_display_name = get_character_info(
+                    user_speaker_name
+                )
                 user_url = (
                     f"https://voicevox.hiroshiba.jp/dormitory/{user_character_id}/"
                 )
@@ -290,7 +301,7 @@ def setup_commands(bot):
             await interaction.followup.send(f"接続中にエラーが発生しました: {e}")
 
     @bot.tree.command(
-        name="list", guilds=APPROVED_GUILD_IDS, description="話者とそのスタイルをページングして表示します。"
+        name="list", guild=TEST_GUILD_ID, description="話者とそのスタイルをページングして表示します。"
     )
     async def list(interaction: discord.Interaction):
         if not speakers:
@@ -377,7 +388,7 @@ def setup_commands(bot):
     #         await ctx.send(f"コマンドを削除中にエラーが発生しました: {e}")
     # @bot.tree.command(
     #     name="display_current_settings",
-    #     guilds=APPROVED_GUILD_IDS,
+    #     guild=TEST_GUILD_ID
     #     description="現在のスタイル設定を表示します。",
     # )
     # async def display_current_settings(interaction: discord.Interaction):
