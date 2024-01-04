@@ -18,7 +18,7 @@ from discord import app_commands
 import discord
 from discord.ui import Button, View
 
-ITEMS_PER_PAGE = 10  # 1ページあたりのアイテム数
+ITEMS_PER_PAGE = 15  # 1ページあたりのアイテム数
 
 
 class PaginationView(View):
@@ -31,6 +31,7 @@ class PaginationView(View):
             len(speakers) // ITEMS_PER_PAGE
             + (1 if len(speakers) % ITEMS_PER_PAGE > 0 else 0),
         )
+        self.add_style_buttons()  # Call this method to add style buttons.
 
     @discord.ui.button(label="前へ", style=discord.ButtonStyle.primary)
     async def previous(self, interaction: discord.Interaction, button: Button):
@@ -41,6 +42,46 @@ class PaginationView(View):
     async def next(self, interaction: discord.Interaction, button: Button):
         self.page = min(self.total_pages, self.page + 1)
         await self.update_message(interaction)
+    def add_style_buttons(self):
+        # スタイル情報に基づいてボタンを動的に生成
+        for style in self.speaker["styles"]:
+            style_name = style["name"]
+            style_id = style["id"]
+            button = discord.ui.Button(
+                label=f"{style_name} (ID: {style_id})",
+                style=discord.ButtonStyle.secondary,
+            )
+            button.callback = self.create_button_callback(style_id)
+            self.add_item(button)
+
+    def create_button_callback(self, style_id):
+        # コールバック関数を動的に生成
+        async def button_callback(interaction: discord.Interaction):
+            await self.on_select(interaction, style_id)
+
+        return button_callback
+
+    async def on_select(self, interaction: discord.Interaction, style_id: int):
+        # スタイル選択時の処理
+        style_name = next(
+            (
+                style["name"]
+                for style in self.speaker["styles"]
+                if style["id"] == style_id
+            ),
+            None,
+        )
+        if not style_name:
+            await interaction.response.send_message("選択したスタイルIDが無効です。", ephemeral=True)
+            return
+
+        # スタイル設定を更新
+        update_style_setting(self.guild_id, self.user_id, style_id, "user")
+
+        # ユーザーに更新を通知
+        await interaction.response.send_message(
+            f"スタイルが「{self.speaker['name']} - {style_name}」に設定されました。"
+        )
 
     async def update_message(self, interaction):
         # 現在のページに応じてボタンの有効/無効を設定
@@ -116,7 +157,10 @@ class SpeakerSelectionView(View):
         end_index = start_index + ITEMS_PER_PAGE
         message_content = f"**利用可能な話者 (ページ {self.page}/{self.total_pages}):**\n"
         for speaker in self.speakers[start_index:end_index]:
-            message_content += f"- {speaker['name']}\n"
+            name = speaker["name"]
+            character_id, display_name = get_character_info(name)
+            url = f"https://voicevox.hiroshiba.jp/dormitory/{character_id}/"
+            message_content += f"\n[{display_name}]({url})"
         return message_content
 
     async def update_message(self, interaction):
