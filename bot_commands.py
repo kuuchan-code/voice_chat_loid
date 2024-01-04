@@ -31,7 +31,7 @@ class PaginationView(View):
             len(speakers) // ITEMS_PER_PAGE
             + (1 if len(speakers) % ITEMS_PER_PAGE > 0 else 0),
         )
-        self.add_style_buttons()  # Call this method to add style buttons.
+        
 
     @discord.ui.button(label="前へ", style=discord.ButtonStyle.primary)
     async def previous(self, interaction: discord.Interaction, button: Button):
@@ -42,46 +42,6 @@ class PaginationView(View):
     async def next(self, interaction: discord.Interaction, button: Button):
         self.page = min(self.total_pages, self.page + 1)
         await self.update_message(interaction)
-    def add_style_buttons(self):
-        # スタイル情報に基づいてボタンを動的に生成
-        for style in self.speaker["styles"]:
-            style_name = style["name"]
-            style_id = style["id"]
-            button = discord.ui.Button(
-                label=f"{style_name} (ID: {style_id})",
-                style=discord.ButtonStyle.secondary,
-            )
-            button.callback = self.create_button_callback(style_id)
-            self.add_item(button)
-
-    def create_button_callback(self, style_id):
-        # コールバック関数を動的に生成
-        async def button_callback(interaction: discord.Interaction):
-            await self.on_select(interaction, style_id)
-
-        return button_callback
-
-    async def on_select(self, interaction: discord.Interaction, style_id: int):
-        # スタイル選択時の処理
-        style_name = next(
-            (
-                style["name"]
-                for style in self.speaker["styles"]
-                if style["id"] == style_id
-            ),
-            None,
-        )
-        if not style_name:
-            await interaction.response.send_message("選択したスタイルIDが無効です。", ephemeral=True)
-            return
-
-        # スタイル設定を更新
-        update_style_setting(self.guild_id, self.user_id, style_id, "user")
-
-        # ユーザーに更新を通知
-        await interaction.response.send_message(
-            f"スタイルが「{self.speaker['name']} - {style_name}」に設定されました。"
-        )
 
     async def update_message(self, interaction):
         # 現在のページに応じてボタンの有効/無効を設定
@@ -144,7 +104,10 @@ class SpeakerSelectionView(View):
             len(speakers) // ITEMS_PER_PAGE
             + (1 if len(speakers) % ITEMS_PER_PAGE > 0 else 0),
         )
+        self.speaker = speaker
         self.add_buttons()
+        self.add_style_buttons()  # Call this method to add style buttons.
+
 
     async def send_initial_message(self, interaction):
         message_content = self.create_message_content()
@@ -213,23 +176,45 @@ class SpeakerSelectionView(View):
         self.page = min(self.total_pages, self.page + 1)
         await self.update_message(interaction)
 
-    def create_button_callback(self, speaker):
+    def add_style_buttons(self):
+        # スタイル情報に基づいてボタンを動的に生成
+        for style in self.speaker["styles"]:
+            style_name = style["name"]
+            style_id = style["id"]
+            button = discord.ui.Button(
+                label=f"{style_name} (ID: {style_id})",
+                style=discord.ButtonStyle.secondary,
+            )
+            button.callback = self.create_button_callback(style_id)
+            self.add_item(button)
+
+    def create_button_callback(self, style_id):
+        # コールバック関数を動的に生成
         async def button_callback(interaction: discord.Interaction):
-            await self.select_speaker(interaction, speaker)
+            await self.on_select(interaction, style_id)
 
         return button_callback
 
-    async def select_speaker(self, interaction: discord.Interaction, speaker):
-        # ここで選択された話者に基づいて処理を行います。
-        # 例えば、スタイル選択ビューを表示するなど。
-        # ...
+    async def on_select(self, interaction: discord.Interaction, style_id: int):
+        # スタイル選択時の処理
+        style_name = next(
+            (
+                style["name"]
+                for style in self.speaker["styles"]
+                if style["id"] == style_id
+            ),
+            None,
+        )
+        if not style_name:
+            await interaction.response.send_message("選択したスタイルIDが無効です。", ephemeral=True)
+            return
 
-        # 以下は一例です。
-        user_id = str(interaction.user.id)
-        guild_id = str(interaction.guild_id)
-        view = StyleSelectionView(speaker, user_id, guild_id)
-        await interaction.response.edit_message(
-            content=f"**{speaker['name']}** のスタイルを選択してください。", view=view
+        # スタイル設定を更新
+        update_style_setting(self.guild_id, self.user_id, style_id, "user")
+
+        # ユーザーに更新を通知
+        await interaction.response.send_message(
+            f"スタイルが「{self.speaker['name']} - {style_name}」に設定されました。"
         )
 
 
