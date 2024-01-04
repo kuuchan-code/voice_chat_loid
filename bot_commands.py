@@ -4,19 +4,11 @@ from handle_commands import handle_voice_config_command
 from pagination_view import PaginationView
 from settings import (
     APPROVED_GUILD_IDS,
-    USER_DEFAULT_STYLE_ID,
-    ANNOUNCEMENT_DEFAULT_STYLE_ID,
 )
 from speaker_selection_view import SpeakerSelectionView
-from utils import (
-    get_character_info,
-    speakers,
-    speaker_settings,
-    save_style_settings,
-    get_style_details,
-)
-from voice import disconnect_voice_client, text_to_speech
-from style_utils import update_style_setting, get_current_style_details
+from voice import connect_voice_client, disconnect_voice_client
+from shared_resources import speakers
+
 
 
 def setup_commands(bot):
@@ -57,79 +49,7 @@ def setup_commands(bot):
         description="ボットをボイスチャンネルに接続し、読み上げを開始します。",
     )
     async def join(interaction: discord.Interaction):
-        # defer the response to keep the interaction alive
-        await interaction.response.defer()
-
-        try:
-            if interaction.user.voice and interaction.user.voice.channel:
-                channel = interaction.user.voice.channel
-                voice_client = await channel.connect(self_deaf=True)
-                # 接続成功時の処理
-                # 接続メッセージの読み上げ
-                welcome_voice = "読み上げを開始します。"
-
-                guild_id = str(interaction.guild_id)
-                user_id = str(interaction.user.id)  # コマンド使用者のユーザーID
-                user_display_name = (
-                    interaction.user.display_name
-                )  # Corrected variable name
-                text_channel_id = str(interaction.channel_id)  # このコマンドを使用したテキストチャンネルID
-
-                # サーバー設定が存在しない場合は初期化
-                if guild_id not in speaker_settings:
-                    speaker_settings[guild_id] = {"text_channel": text_channel_id}
-                else:
-                    # 既にサーバー設定が存在する場合はテキストチャンネルIDを更新
-                    speaker_settings[guild_id]["text_channel"] = text_channel_id
-
-                save_style_settings()  # 変更を保存
-
-                # 通知スタイルIDを取得
-                announcement_style_id = speaker_settings.get(guild_id, {}).get(
-                    "announcement", ANNOUNCEMENT_DEFAULT_STYLE_ID
-                )
-                # ユーザーのスタイルIDを取得
-                user_style_id = speaker_settings.get(
-                    user_id,
-                    speaker_settings[guild_id].get(
-                        "user_default", USER_DEFAULT_STYLE_ID
-                    ),
-                )
-
-                # クレジットをメッセージに追加
-                announcement_speaker_name, announcement_style_name = get_style_details(
-                    announcement_style_id
-                )
-                (
-                    announcement_character_id,
-                    announcement_display_name,
-                ) = get_character_info(announcement_speaker_name)
-                announcement_url = f"https://voicevox.hiroshiba.jp/dormitory/{announcement_character_id}/"
-                user_speaker_name, user_style_name = get_style_details(user_style_id)
-                user_character_id, user_tts_display_name = get_character_info(
-                    user_speaker_name
-                )
-                user_url = (
-                    f"https://voicevox.hiroshiba.jp/dormitory/{user_character_id}/"
-                )
-                welcome_message = (
-                    f"アナウンス音声「[{announcement_display_name}]({announcement_url}) {announcement_style_name}」\n"
-                    f"{user_display_name}さんのテキスト読み上げ音声「[{user_tts_display_name}]({user_url}) {user_style_name}」"
-                )
-
-                # メッセージとスタイルIDをキューに追加
-                await text_to_speech(
-                    voice_client, welcome_voice, announcement_style_id, guild_id
-                )
-                await interaction.followup.send(welcome_message)
-            else:
-                await interaction.followup.send(
-                    "ボイスチャンネルに接続できませんでした。ユーザーがボイスチャンネルにいることを確認してください。"
-                )
-        except Exception as e:
-            # エラーメッセージをユーザーに通知
-            await interaction.followup.send(f"接続中にエラーが発生しました: {e}")
-
+        await connect_voice_client(interaction)
     @bot.tree.command(
         name="list", guilds=APPROVED_GUILD_IDS, description="話者とそのスタイルをページングして表示します。"
     )

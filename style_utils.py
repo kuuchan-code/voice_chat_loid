@@ -2,10 +2,10 @@
 import json
 from settings import (
     STYLE_SETTINGS_FILE,
-    speaker_settings,
     USER_DEFAULT_STYLE_ID,
     ANNOUNCEMENT_DEFAULT_STYLE_ID,
 )
+from utils import get_style_details
 
 
 def update_style_setting(guild_id, user_id, style_id, voice_scope):

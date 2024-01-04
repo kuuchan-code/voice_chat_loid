@@ -3,8 +3,9 @@ import asyncio
 import json
 import discord
 import io
-from settings import SYNTHESIS_URL, AUDIO_QUERY_URL
-from settings import speaker_settings
+from settings import ANNOUNCEMENT_DEFAULT_STYLE_ID, SYNTHESIS_URL, AUDIO_QUERY_URL, USER_DEFAULT_STYLE_ID
+from style_utils import save_style_settings
+from utils import get_character_info
 
 
 # Initialize global variables
@@ -101,6 +102,81 @@ async def disconnect_voice_client(interaction):
         del speaker_settings[guild_id]["text_channel"]
     await interaction.guild.voice_client.disconnect()
     await interaction.response.send_message("ボイスチャンネルから切断しました。")
+
+
+async def connect_voice_client(interaction):
+        # defer the response to keep the interaction alive
+    await interaction.response.defer()
+
+    try:
+        if interaction.user.voice and interaction.user.voice.channel:
+            channel = interaction.user.voice.channel
+            voice_client = await channel.connect(self_deaf=True)
+            # 接続成功時の処理
+            # 接続メッセージの読み上げ
+            welcome_voice = "読み上げを開始します。"
+
+            guild_id = str(interaction.guild_id)
+            user_id = str(interaction.user.id)  # コマンド使用者のユーザーID
+            user_display_name = (
+                interaction.user.display_name
+            )  # Corrected variable name
+            text_channel_id = str(interaction.channel_id)  # このコマンドを使用したテキストチャンネルID
+
+            # サーバー設定が存在しない場合は初期化
+            if guild_id not in speaker_settings:
+                speaker_settings[guild_id] = {"text_channel": text_channel_id}
+            else:
+                # 既にサーバー設定が存在する場合はテキストチャンネルIDを更新
+                speaker_settings[guild_id]["text_channel"] = text_channel_id
+
+            save_style_settings()  # 変更を保存
+
+            # 通知スタイルIDを取得
+            announcement_style_id = speaker_settings.get(guild_id, {}).get(
+                "announcement", ANNOUNCEMENT_DEFAULT_STYLE_ID
+            )
+            # ユーザーのスタイルIDを取得
+            user_style_id = speaker_settings.get(
+                user_id,
+                speaker_settings[guild_id].get(
+                    "user_default", USER_DEFAULT_STYLE_ID
+                ),
+            )
+
+            # クレジットをメッセージに追加
+            announcement_speaker_name, announcement_style_name = get_style_details(
+                announcement_style_id
+            )
+            (
+                announcement_character_id,
+                announcement_display_name,
+            ) = get_character_info(announcement_speaker_name)
+            announcement_url = f"https://voicevox.hiroshiba.jp/dormitory/{announcement_character_id}/"
+            user_speaker_name, user_style_name = get_style_details(user_style_id)
+            user_character_id, user_tts_display_name = get_character_info(
+                user_speaker_name
+            )
+            user_url = (
+                f"https://voicevox.hiroshiba.jp/dormitory/{user_character_id}/"
+            )
+            welcome_message = (
+                f"アナウンス音声「[{announcement_display_name}]({announcement_url}) {announcement_style_name}」\n"
+                f"{user_display_name}さんのテキスト読み上げ音声「[{user_tts_display_name}]({user_url}) {user_style_name}」"
+            )
+
+            # メッセージとスタイルIDをキューに追加
+            await text_to_speech(
+                voice_client, welcome_voice, announcement_style_id, guild_id
+            )
+            await interaction.followup.send(welcome_message)
+        else:
+            await interaction.followup.send(
+                "ボイスチャンネルに接続できませんでした。ユーザーがボイスチャンネルにいることを確認してください。"
+            )
+    except Exception as e:
+        # エラーメッセージをユーザーに通知
+        await interaction.followup.send(f"接続中にエラーが発生しました: {e}")
 
 
 async def clear_playback_queue(guild_id):

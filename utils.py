@@ -1,35 +1,18 @@
 import requests
-import json
 import jaconv
 import re
 import discord
 from settings import (
     BOT_PREFIX,
-    CHARACTORS_INFO,
     USER_DEFAULT_STYLE_ID,
     ANNOUNCEMENT_DEFAULT_STYLE_ID,
-    SPEAKERS_URL,
-    STYLE_SETTINGS_FILE,
 )
 from style_utils import save_style_settings
 from voice import clear_playback_queue, text_to_speech
-from settings import speaker_settings
+from shared_resources import speakers
 
 
 current_voice_client = None
-
-
-def get_character_info(speaker_name):
-    # もち子さんの特別な処理
-    if speaker_name == "もち子さん":
-        character_key = "もち子さん"  # CHARACTORS_INFOでのキー
-        display_name = "VOICEVOX:もち子(cv 明日葉よもぎ)"  # 特別な表示名
-    else:
-        character_key = speaker_name  # その他のスピーカーは通常通り処理
-        display_name = f"VOICEVOX:{speaker_name}"  # 標準の表示名
-
-    character_id = CHARACTORS_INFO.get(character_key, "unknown")  # キャラクターIDを取得
-    return character_id, display_name
 
 
 def validate_style_id(style_id):
@@ -52,16 +35,6 @@ def fetch_json(url):
     except Exception as err:
         print(f"An error occurred: {err}")
     return None
-
-
-def get_style_details(style_id, default_name="デフォルト"):
-    """スタイルIDに対応するスピーカー名とスタイル名を返します。"""
-    for speaker in speakers:
-        for style in speaker["styles"]:
-            if style["id"] == style_id:
-                speaker_name = speaker["name"]
-                return (speaker_name, style["name"])
-    return (default_name, default_name)
 
 
 async def replace_content(text, message):
@@ -187,7 +160,6 @@ async def handle_voice_state_update(bot, member, before, after):
 
 # Initialize global variables
 guild_playback_queues = {}
-speakers = fetch_json(SPEAKERS_URL)  # URL is now from settings
 emoji_ja = fetch_json(
     "https://raw.githubusercontent.com/yagays/emoji-ja/master/data/emoji_ja.json"
 )
@@ -250,3 +222,20 @@ def get_style_id(user_id, guild_id):
         str(user_id),
         speaker_settings[guild_id].get("user_default", USER_DEFAULT_STYLE_ID),
     )
+
+
+from settings import CHARACTORS_INFO
+
+
+def get_character_info(speaker_name):
+    # もち子さんの特別な処理
+    if speaker_name == "もち子さん":
+        character_key = "もち子さん"  # CHARACTORS_INFOでのキー
+        display_name = "VOICEVOX:もち子(cv 明日葉よもぎ)"  # 特別な表示名
+    else:
+        character_key = speaker_name  # その他のスピーカーは通常通り処理
+        display_name = f"VOICEVOX:{speaker_name}"  # 標準の表示名
+
+    character_id = CHARACTORS_INFO.get(character_key, "unknown")  # キャラクターIDを取得
+    return character_id, display_name
+

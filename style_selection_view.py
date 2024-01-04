@@ -1,6 +1,5 @@
 import discord
 from discord.ui import View
-from settings import ITEMS_PER_PAGE
 from style_utils import update_style_setting
 
 # スタイル選択のビュークラス
