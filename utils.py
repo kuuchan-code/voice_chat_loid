@@ -8,8 +8,10 @@ from settings import (
     ANNOUNCEMENT_DEFAULT_STYLE_ID,
 )
 from style_utils import save_style_settings
-from voice import clear_playback_queue, text_to_speech
-from shared_resources import speakers
+from voice_utils import get_character_info
+from shared_resources import speakers, speaker_settings
+from core_utils import fetch_json
+from settings import CHARACTORS_INFO
 
 
 current_voice_client = None
@@ -25,16 +27,6 @@ def validate_style_id(style_id):
     return False, None, None
 
 
-def fetch_json(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        return response.json()
-    except requests.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err}")
-    except Exception as err:
-        print(f"An error occurred: {err}")
-    return None
 
 
 async def replace_content(text, message):
@@ -227,15 +219,12 @@ def get_style_id(user_id, guild_id):
 from settings import CHARACTORS_INFO
 
 
-def get_character_info(speaker_name):
-    # もち子さんの特別な処理
-    if speaker_name == "もち子さん":
-        character_key = "もち子さん"  # CHARACTORS_INFOでのキー
-        display_name = "VOICEVOX:もち子(cv 明日葉よもぎ)"  # 特別な表示名
-    else:
-        character_key = speaker_name  # その他のスピーカーは通常通り処理
-        display_name = f"VOICEVOX:{speaker_name}"  # 標準の表示名
 
-    character_id = CHARACTORS_INFO.get(character_key, "unknown")  # キャラクターIDを取得
-    return character_id, display_name
-
+def get_style_details(style_id, default_name="デフォルト"):
+    """スタイルIDに対応するスピーカー名とスタイル名を返します。"""
+    for speaker in speakers:
+        for style in speaker["styles"]:
+            if style["id"] == style_id:
+                speaker_name = speaker["name"]
+                return (speaker_name, style["name"])
+    return (default_name, default_name)

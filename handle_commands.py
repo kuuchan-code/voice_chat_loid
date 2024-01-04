@@ -1,8 +1,9 @@
 import logging
 from style_utils import get_current_style_details, update_style_setting
 from settings import CHARACTORS_INFO
+from utils import validate_style_id
 
-from utils import get_character_info, validate_style_id
+from voice_utils import get_character_info
 
 
 async def handle_voice_config_command(interaction, style_id: int, voice_scope: str):

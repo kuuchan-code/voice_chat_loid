@@ -1,12 +1,12 @@
 # style_utils.py
 import json
+from common_utils import get_style_details
 from settings import (
     STYLE_SETTINGS_FILE,
     USER_DEFAULT_STYLE_ID,
     ANNOUNCEMENT_DEFAULT_STYLE_ID,
 )
-from utils import get_style_details
-
+from shared_resources import speaker_settings
 
 def update_style_setting(guild_id, user_id, style_id, voice_scope):
     if voice_scope == "user_default":
@@ -37,11 +37,3 @@ def save_style_settings():
     with open(STYLE_SETTINGS_FILE, "w") as f:
         json.dump(speaker_settings, f)
 
-
-def load_style_settings():
-    """スタイル設定をロードします。"""
-    try:
-        with open(STYLE_SETTINGS_FILE, "r") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}

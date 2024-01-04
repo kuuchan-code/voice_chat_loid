@@ -2,7 +2,7 @@ import discord
 from discord.ui import View, Button
 from settings import ITEMS_PER_PAGE
 
-from utils import get_character_info
+from voice_utils import get_character_info
 
 def update_pagination_buttons(view, total_pages):
     view.children[0].disabled = view.page <= 1

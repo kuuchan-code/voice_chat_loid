@@ -3,9 +3,13 @@ import asyncio
 import json
 import discord
 import io
+from common_utils import get_style_details
 from settings import ANNOUNCEMENT_DEFAULT_STYLE_ID, SYNTHESIS_URL, AUDIO_QUERY_URL, USER_DEFAULT_STYLE_ID
 from style_utils import save_style_settings
-from utils import get_character_info
+from voice_utils import get_character_info
+from shared_resources import speaker_settings
+from voice_utils import clear_playback_queue, text_to_speech
+
 
 
 # Initialize global variables
@@ -66,20 +70,6 @@ async def synthesis(speaker, query_data):
             if response.status == 200:
                 return await response.read()
             return None
-
-
-async def text_to_speech(voice_client, text, style_id, guild_id):
-    """テキストを音声に変換して再生します。"""
-    if not voice_client or not voice_client.is_connected():
-        return  # 接続されていない場合は処理を中断
-
-    try:
-        lines = text.split("\n")
-        for line in filter(None, lines):  # 空行を除外
-            guild_queue = get_guild_playback_queue(guild_id)
-            await guild_queue.put((voice_client, line, style_id))
-    except Exception as e:
-        print(f"Error in text_to_speech: {e}")
 
 
 async def speak_line(voice_client, line, style_id, guild_id):
@@ -178,12 +168,3 @@ async def connect_voice_client(interaction):
         # エラーメッセージをユーザーに通知
         await interaction.followup.send(f"接続中にエラーが発生しました: {e}")
 
-
-async def clear_playback_queue(guild_id):
-    guild_queue = get_guild_playback_queue(guild_id)
-    while not guild_queue.empty():
-        try:
-            guild_queue.get_nowait()
-        except asyncio.QueueEmpty:
-            continue
-        guild_queue.task_done()
