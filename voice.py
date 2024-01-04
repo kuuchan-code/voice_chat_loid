@@ -4,6 +4,7 @@ import json
 import discord
 import io
 from settings import SYNTHESIS_URL, AUDIO_QUERY_URL
+from settings import speaker_settings
 
 
 # Initialize global variables
@@ -91,6 +92,15 @@ async def speak_line(voice_client, line, style_id, guild_id):
             # Wait for the current audio to finish playing before returning
             while voice_client.is_playing():
                 await asyncio.sleep(0.1)
+
+
+async def disconnect_voice_client(interaction):
+    guild_id = str(interaction.guild_id)
+    await clear_playback_queue(guild_id)
+    if "text_channel" in speaker_settings.get(guild_id, {}):
+        del speaker_settings[guild_id]["text_channel"]
+    await interaction.guild.voice_client.disconnect()
+    await interaction.response.send_message("ボイスチャンネルから切断しました。")
 
 
 async def clear_playback_queue(guild_id):

@@ -1,5 +1,6 @@
 import discord
 
+
 BOT_PREFIX = "!"
 GAME_NAME = f"/helpでヘルプを表示。/listでIDを確認。/voice_configで音声変更。"
 USER_DEFAULT_STYLE_ID = 3
@@ -10,6 +11,7 @@ SPEAKERS_URL = VOICEVOX_ENGINE_URL + "speakers"
 AUDIO_QUERY_URL = VOICEVOX_ENGINE_URL + "audio_query"
 SYNTHESIS_URL = VOICEVOX_ENGINE_URL + "synthesis"
 STYLE_SETTINGS_FILE = "style_settings.json"
+ITEMS_PER_PAGE = 10  # 1ページあたりのアイテム数
 TEST_GUILD_ID = discord.Object(id="1189256965172514836")
 APPROVED_GUILD_IDS = [
     discord.Object(id="1189256965172514836"),  # くーさーばー１
@@ -53,3 +55,4 @@ CHARACTORS_INFO = {
     "満別花丸": "manbetsu_hanamaru",
     "琴詠ニア": "kotoyomi_nia",
 }
+speaker_settings = {}

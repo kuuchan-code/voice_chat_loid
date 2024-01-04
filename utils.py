@@ -8,11 +8,13 @@ from settings import (
     CHARACTORS_INFO,
     USER_DEFAULT_STYLE_ID,
     ANNOUNCEMENT_DEFAULT_STYLE_ID,
-    MAX_MESSAGE_LENGTH,
     SPEAKERS_URL,
     STYLE_SETTINGS_FILE,
 )
+from style_utils import save_style_settings
 from voice import clear_playback_queue, text_to_speech
+from settings import speaker_settings
+
 
 current_voice_client = None
 
@@ -62,10 +64,6 @@ def get_style_details(style_id, default_name="デフォルト"):
     return (default_name, default_name)
 
 
-def save_style_settings():
-    """スタイル設定を保存します。"""
-    with open(STYLE_SETTINGS_FILE, "w") as f:
-        json.dump(speaker_settings, f)
 
 
 def load_style_settings():
@@ -204,7 +202,6 @@ async def handle_voice_state_update(bot, member, before, after):
 # Initialize global variables
 guild_playback_queues = {}
 speakers = fetch_json(SPEAKERS_URL)  # URL is now from settings
-speaker_settings = load_style_settings()
 emoji_ja = fetch_json(
     "https://raw.githubusercontent.com/yagays/emoji-ja/master/data/emoji_ja.json"
 )
