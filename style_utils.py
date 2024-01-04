@@ -36,3 +36,12 @@ def save_style_settings():
     """スタイル設定を保存します。"""
     with open(STYLE_SETTINGS_FILE, "w") as f:
         json.dump(speaker_settings, f)
+
+
+def load_style_settings():
+    """スタイル設定をロードします。"""
+    try:
+        with open(STYLE_SETTINGS_FILE, "r") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}

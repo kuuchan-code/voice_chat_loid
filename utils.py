@@ -64,69 +64,55 @@ def get_style_details(style_id, default_name="デフォルト"):
     return (default_name, default_name)
 
 
-
-
-def load_style_settings():
-    """スタイル設定をロードします。"""
-    try:
-        with open(STYLE_SETTINGS_FILE, "r") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
-
-
 async def replace_content(text, message):
-    # ユーザーメンションを検出する正規表現パターン
-    user_mention_pattern = re.compile(r"<@!?(\d+)>")
-    # ロールメンションを検出する正規表現パターン
-    role_mention_pattern = re.compile(r"<@&(\d+)>")
-    # チャンネルを検出する正規表現パターン
-    channel_pattern = re.compile(r"<#(\d+)>")
-    # カスタム絵文字を検出する正規表現パターン
-    custom_emoji_pattern = re.compile(r"<:(\w*):\d*>")
-    # URLを検出する正規表現パターン
-    url_pattern = re.compile(r"https?://\S+")
+    # Define patterns for mentions, channels, emojis, and URLs
+    patterns = {
+        "user_mention": re.compile(r"<@!?(\d+)>"),
+        "role_mention": re.compile(r"<@&(\d+)>"),
+        "channel": re.compile(r"<#(\d+)>"),
+        "custom_emoji": re.compile(r"<:(\w*):\d*>"),
+        "url": re.compile(r"https?://\S+"),
+    }
 
-    def replace_user_mention(match):
-        user_id = int(match.group(1))
-        user = message.guild.get_member(user_id)
-        return user.display_name + "さん" if user else match.group(0)
+    # Replacement functions for each pattern type
+    def replace_mention_with_name(match, context, format_str):
+        entity_id = int(match.group(1))
+        entity = context.get(entity_id)
+        return format_str.format(entity) if entity else match.group(0)
 
-    def replace_role_mention(match):
-        role_id = int(match.group(1))
-        role = discord.utils.get(message.guild.roles, id=role_id)
-        return role.name + "役職" if role else match.group(0)
-
-    def replace_channel_mention(match):
+    def replace_channel_mention(match, message):
         channel_id = int(match.group(1))
         channel = message.guild.get_channel(channel_id)
         return channel.name + "チャンネル" if channel else match.group(0)
-
-    def replace_keywords_with_short_name(text, symbol_dict, special_cases):
-        for symbol, data in symbol_dict.items():
-            # 特別なケースを先に処理
-            if symbol in special_cases:
-                # print(f"特別なケースを処理: {symbol} -> {special_cases[symbol]}")
-                text = text.replace(symbol, special_cases[symbol])
-                continue
-
-            text = text.replace(symbol, data["short_name"])
-            # print(f"シンボル置換後のテキスト: {text}")
-        return text
 
     def replace_custom_emoji_name_to_kana(match):
         emoji_name = match.group(1)
         return jaconv.alphabet2kana(emoji_name) + " "
 
-    # ユーザーメンションを「○○さん」に置き換え
-    text = user_mention_pattern.sub(replace_user_mention, text)
-    # ロールメンションを「○○役職」に置き換え
-    text = role_mention_pattern.sub(replace_role_mention, text)
-    text = channel_pattern.sub(replace_channel_mention, text)
-    text = url_pattern.sub("URL省略", text)
-    text = custom_emoji_pattern.sub(replace_custom_emoji_name_to_kana, text)
+    # Replace content based on patterns
+    text = patterns["user_mention"].sub(
+        lambda m: replace_mention_with_name(m, message.guild.get_member, "{}さん"), text
+    )
+    text = patterns["role_mention"].sub(
+        lambda m: replace_mention_with_name(
+            m, discord.utils.get(message.guild.roles, id=int(m.group(1))), "{}役職"
+        ),
+        text,
+    )
+    text = patterns["channel"].sub(lambda m: replace_channel_mention(m, message), text)
+    text = patterns["url"].sub("URL省略", text)
+    text = patterns["custom_emoji"].sub(replace_custom_emoji_name_to_kana, text)
     text = replace_keywords_with_short_name(text, emoji_ja, special_cases)
 
+    return text
+
+
+def replace_keywords_with_short_name(text, symbol_dict, special_cases):
+    for symbol, data in symbol_dict.items():
+        if symbol in special_cases:
+            text = text.replace(symbol, special_cases[symbol])
+            continue
+        text = text.replace(symbol, data["short_name"])
     return text
 
 
