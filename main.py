@@ -1,11 +1,35 @@
+from functools import partial
 import logging
 import discord
 from discord.ext import commands
 import os
-from utils import handle_message, handle_voice_state_update
+from commands import join, leave
+from utils import handle_message, handle_voice_state_update, load_style_settings
 from bot_commands import setup_commands
 from settings import APPROVED_GUILD_IDS, BOT_PREFIX, GAME_NAME
 from voice import VoiceSynthServer
+
+
+def setup_commands(server, bot, speaker_settings):
+    # joinコマンド用の部分関数を作成
+    join_partial = partial(join, server=server, speaker_settings=speaker_settings)
+
+    # joinコマンドを登録
+    join_command = bot.tree.command(
+        name="join",
+        guilds=APPROVED_GUILD_IDS,
+        description="ボットをボイスチャンネルに接続し、読み上げを開始します。",
+    )(join_partial)
+    bot.tree.add_command(join_command)
+
+    # leaveコマンド用の部分関数を作成
+    leave_partial = partial(leave, server=server, speaker_settings=speaker_settings)
+
+    # leaveコマンドを登録
+    leave_command = bot.tree.command(
+        name="leave", guilds=APPROVED_GUILD_IDS, description="ボットをボイスチャンネルから切断します。"
+    )(leave_partial)
+    bot.tree.add_command(leave_command)
 
 
 if __name__ == "__main__":
@@ -13,7 +37,8 @@ if __name__ == "__main__":
     intents.message_content = True
     bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
     server = VoiceSynthServer()
-    setup_commands(server, bot)
+    speaker_settings = load_style_settings()
+    setup_commands(server, bot, speaker_settings)
 
     @bot.event
     async def on_ready():
