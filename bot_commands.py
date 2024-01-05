@@ -27,15 +27,3 @@ from commands import leave, join
 #     speaker_name = "もち子(cv 明日葉よもぎ)"
 # コマンド設定関数
 def setup_commands(bot):
-    # ボットをボイスチャンネルに接続し、読み上げを開始するコマンド
-    join_command = bot.tree.command(
-        name="join", guilds=APPROVED_GUILD_IDS, description="ボットをボイスチャンネルに接続し、読み上げを開始します。"
-    )(join)
-    bot.tree.add_command(join_command)
-
-
-    # ボットをボイスチャンネルから切断するコマンド
-    leave_command = bot.tree.command(
-        name="leave", guilds=APPROVED_GUILD_IDS, description="ボットをボイスチャンネルから切断します。"
-    )(leave)
-    bot.tree.add_command(leave_command)
