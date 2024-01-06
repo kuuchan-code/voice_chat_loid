@@ -104,26 +104,28 @@ def setup_commands(server, bot):
             self.current_page = 0
 
         @discord.ui.button(label="前へ", style=discord.ButtonStyle.blurple)
-        async def previous_button(
-            self, interaction: discord.Interaction, button: discord.ui.Button
-        ):
-            # ページをナビゲートします。最初のページなら最後のページへ移動します。
+        async def previous_button(self, interaction: discord.Interaction, button: discord.ui.Button):    
             if self.current_page > 0:
                 self.current_page -= 1
             else:
                 self.current_page = len(self.speakers) - 1
+            
+            # ユーザーに対してレスポンスをすぐに送信
+            await interaction.response.defer()
             await self.update_speaker_list(interaction)
 
         @discord.ui.button(label="次へ", style=discord.ButtonStyle.blurple)
-        async def next_button(
-            self, interaction: discord.Interaction, button: discord.ui.Button
-        ):
-            # ページをナビゲートします。最後のページなら最初のページへ移動します。
+        async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+            # 非同期でページを更新
             if self.current_page < len(self.speakers) - 1:
                 self.current_page += 1
             else:
                 self.current_page = 0
+            
+            # ユーザーに対してレスポンスをすぐに送信
+            await interaction.response.defer()
             await self.update_speaker_list(interaction)
+
 
         async def update_speaker_list(self, interaction: discord.Interaction):
             voice_scope_description = {
@@ -198,7 +200,7 @@ def setup_commands(server, bot):
                 )
 
                 self.add_item(style_button)
-            await interaction.response.edit_message(content=content, view=self)
+            await interaction.edit_original_response(content=content, view=self)
 
     async def initiate_speaker_paging(interaction: discord.Interaction, voice_scope):
         voice_scope_description = {
