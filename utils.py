@@ -16,8 +16,6 @@ from settings import (
 import emoji  # 絵文字の判定を行うためのライブラリ
 
 
-
-
 def get_character_info(speaker_name):
     # もち子さんの特別な処理
     if speaker_name == "もち子さん":
@@ -173,7 +171,6 @@ async def handle_voice_state_update(server, bot, member, before, after):
     if after.channel is None and member.guild.voice_client:
         # ボイスチャンネルにまだ誰かいるか確認します。
         if not any(not user.bot for user in before.channel.members):
-
             # キューをクリアする
             await server.clear_playback_queue(guild_id)
             if guild_id in config_pickle and "text_channel" in config_pickle[guild_id]:

@@ -4,7 +4,7 @@ from discord.ext import commands
 import os
 from utils import handle_message, handle_voice_state_update
 from bot_commands import setup_commands
-from settings import APPROVED_GUILD_IDS_INT, BOT_PREFIX, GAME_NAME
+from settings import APPROVED_GUILD_IDS_INT, BOT_PREFIX, GAME_NAME, TOKEN
 from voice import VoiceSynthServer
 
 
@@ -47,4 +47,4 @@ if __name__ == "__main__":
     async def on_voice_state_update(member, before, after):
         await handle_voice_state_update(server, bot, member, before, after)
 
-    bot.run(os.getenv("VOICECHATLOIDTEST_TOKEN"))
+    bot.run(TOKEN)
