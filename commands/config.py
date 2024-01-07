@@ -53,6 +53,28 @@ def setup_config_command(bot, voice_config):
             self.speakers = speakers
             self.voice_scope = voice_scope
             self.current_page = 0
+                    # 新しいページ番号入力機能を追加
+            self.page_input = discord.ui.TextInput(
+                label="ページ番号",
+                style=discord.TextStyle.short,
+                placeholder=f"1～{len(self.speakers)}の数値を入力",
+                min_length=1,
+                max_length=len(str(len(self.speakers))),
+            )
+            self.add_item(self.page_input)
+
+        # 新しいボタンイベントを追加
+        @discord.ui.button(label="5ページ前へ", style=discord.ButtonStyle.blurple)
+        async def skip_previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+            # 5ページ前に移動
+            self.current_page = max(self.current_page - 5, 0)
+            await self.update_speaker_list(interaction)
+
+        @discord.ui.button(label="5ページ次へ", style=discord.ButtonStyle.blurple)
+        async def skip_next(self, interaction: discord.Interaction, button: discord.ui.Button):
+            # 5ページ後ろに移動
+            self.current_page = min(self.current_page + 5, len(self.speakers) - 1)
+            await self.update_speaker_list(interaction)
 
         @discord.ui.button(label="<<", style=discord.ButtonStyle.blurple)
         async def first_button(
@@ -87,7 +109,7 @@ def setup_config_command(bot, voice_config):
         ):
             self.current_page = len(self.speakers) - 1
             await self.update_speaker_list(interaction)
-
+        
         async def update_speaker_list(self, interaction: discord.Interaction):
             self.first_button.disabled = self.current_page == 0
             self.last_button.disabled = self.current_page == len(self.speakers) - 1
@@ -164,6 +186,23 @@ def setup_config_command(bot, voice_config):
 
                 self.add_item(style_button)
             await interaction.response.edit_message(content=content, view=self)
+                        # ページ情報を更新
+            self.page_input.placeholder = f"1～{len(self.speakers)}の数値を入力 (現在: {self.current_page + 1})"
+
+            # スキップボタンの有効/無効を更新
+            self.skip_previous.disabled = self.current_page < 5
+            self.skip_next.disabled = self.current_page > len(self.speakers) - 6
+
+        # ユーザーがページ番号を入力した時の処理
+        @discord.ui.Modal(title="ページジャンプ")
+        async def page_jump(self, interaction: discord.Interaction, modal: discord.ui.Modal):
+            try:
+                # 入力されたページ番号を取得し、適切な範囲内に修正
+                page_num = max(1, min(int(modal.children[0].value), len(self.speakers)))
+                self.current_page = page_num - 1  # ページは0から始まるため、1を引く
+                await self.update_speaker_list(interaction)
+            except ValueError:
+                await interaction.response.send_message("無効なページ番号です。", ephemeral=True)
 
     async def initiate_speaker_paging(interaction: discord.Interaction, voice_scope):
         voice_scope_description = get_voice_scope_description(interaction)
