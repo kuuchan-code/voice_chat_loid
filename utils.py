@@ -258,3 +258,4 @@ async def replace_content(text, message):
     text = emoji.demojize(text, language="ja")
 
     return text
+
