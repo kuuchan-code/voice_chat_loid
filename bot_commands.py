@@ -132,7 +132,7 @@ def setup_config_command(bot, voice_config):
     )
     async def config(interaction: discord.Interaction):
         voice_scope_description = get_voice_scope_description(interaction)
-        view = create_config_view(interaction, voice_scope_description)
+        view = PagingView.create_config_view(interaction, voice_scope_description)
         await interaction.response.send_message(
             "設定対象を選んでください：", view=view, ephemeral=True
         )
@@ -144,24 +144,6 @@ def setup_config_command(bot, voice_config):
             "user_default": "未設定ユーザーの読み上げ音声",
         }
 
-    def create_config_view(interaction, voice_scope_description):
-        view = View()
-        for voice_scope, label in voice_scope_description.items():
-            button = Button(
-                style=discord.ButtonStyle.primary
-                if voice_scope == "user"
-                else discord.ButtonStyle.secondary,
-                label=label,
-            )
-            button.callback = create_button_callback(interaction, button, voice_scope)
-            view.add_item(button)
-        return view
-
-    def create_button_callback(interaction, button, voice_scope):
-        async def on_button_click(interaction: discord.Interaction):
-            await initiate_speaker_paging(interaction, voice_scope)
-
-        return on_button_click
 
     class PagingView(discord.ui.View):
         def __init__(self, speakers, voice_scope):
@@ -204,7 +186,28 @@ def setup_config_command(bot, voice_config):
             self.current_page = len(self.speakers) - 1
             await self.update_speaker_list(interaction)
 
+        def create_config_view(self, interaction, voice_scope_description):
+            view = View()
+            for voice_scope, label in voice_scope_description.items():
+                button = Button(
+                    style=discord.ButtonStyle.primary
+                    if voice_scope == "user"
+                    else discord.ButtonStyle.secondary,
+                    label=label,
+                )
+                button.callback = self.create_button_callback(interaction, button, voice_scope)
+                view.add_item(button)
+            return view
+
+        def create_button_callback(self, interaction, button, voice_scope):
+            async def on_button_click(interaction: discord.Interaction):
+                await self.initiate_speaker_paging(interaction, voice_scope)
+
+            return on_button_click
         async def update_speaker_list(self, interaction: discord.Interaction):
+            self.first_button.disabled = self.current_page == 0
+            self.last_button.disabled = self.current_page == len(self.speakers) - 1
+
             voice_scope_description = get_voice_scope_description(interaction)
             # 'interaction'を正しく使ってメッセージを編集
             speaker_name = self.speakers[self.current_page]["name"]
@@ -279,72 +282,74 @@ def setup_config_command(bot, voice_config):
                 self.add_item(style_button)
             await interaction.response.edit_message(content=content, view=self)
 
-    async def initiate_speaker_paging(interaction: discord.Interaction, voice_scope):
-        voice_scope_description = get_voice_scope_description(interaction)
-        # 初期ページングビューを作成
-        view = PagingView(voice_config.speakers, voice_scope)
-        # 最初の話者を表示
-        speaker_name = (
-            voice_config.speakers[0]["name"]
-            if voice_config.speakers
-            else "利用可能な話者がいません"
-        )
-        content = f"矢印ボタンで使用するキャラクターを選択し、スタイルを選んでください：\nページ 1 / {len(voice_config.speakers)}\n"
-        speaker_character_id, speaker_display_name = get_character_info(speaker_name)
-        speaker_url = f"{DORMITORY_URL_BASE}/{speaker_character_id}/"
+        async def initiate_speaker_paging(self, interaction: discord.Interaction, voice_scope):
 
-        content += f"[{speaker_display_name}]({speaker_url})"
-        # 最初の話者の各スタイルに対応するボタンを追加
-        for style in voice_config.speakers[0]["styles"]:  # 'styles'は各話者のスタイル辞書のリストと仮定
-            style_button = discord.ui.Button(
-                label=style["name"], style=discord.ButtonStyle.secondary
+            voice_scope_description = get_voice_scope_description(interaction)
+            # 初期ページングビューを作成
+            view = PagingView(voice_config.speakers, voice_scope)
+            view.first_button.disabled = self.current_page == 0
+            # 最初の話者を表示
+            speaker_name = (
+                voice_config.speakers[0]["name"]
+                if voice_config.speakers
+                else "利用可能な話者がいません"
             )
+            content = f"矢印ボタンで使用するキャラクターを選択し、スタイルを選んでください：\nページ 1 / {len(voice_config.speakers)}\n"
+            speaker_character_id, speaker_display_name = get_character_info(speaker_name)
+            speaker_url = f"{DORMITORY_URL_BASE}/{speaker_character_id}/"
 
-            # Define an async function for handling button clicks
-            async def handle_style_button_click(
-                interaction: discord.Interaction,
-                button: discord.ui.Button,
-                style_id=style["id"],
-            ):
-                await on_style_button_click(interaction, button, style_id)
-
-            # ボタンが押されたときの処理を定義（別の関数を定義することも検討してください）
-            async def on_style_button_click(
-                interaction: discord.Interaction,
-                button: Button,
-                style_id=style["id"],
-            ):
-                # スタイル変更をここで処理
-                valid, speaker_name, style_name = voice_config.validate_style_id(
-                    style_id
+            content += f"[{speaker_display_name}]({speaker_url})"
+            # 最初の話者の各スタイルに対応するボタンを追加
+            for style in voice_config.speakers[0]["styles"]:  # 'styles'は各話者のスタイル辞書のリストと仮定
+                style_button = discord.ui.Button(
+                    label=style["name"], style=discord.ButtonStyle.secondary
                 )
-                if not valid:
-                    await interaction.response.edit_message(
-                        f"スタイルID {style_id} は無効です。`/list`で有効なIDを確認し、正しいIDを入力してください。",
-                        view=view,
+
+                # Define an async function for handling button clicks
+                async def handle_style_button_click(
+                    interaction: discord.Interaction,
+                    button: discord.ui.Button,
+                    style_id=style["id"],
+                ):
+                    await on_style_button_click(interaction, button, style_id)
+
+                # ボタンが押されたときの処理を定義（別の関数を定義することも検討してください）
+                async def on_style_button_click(
+                    interaction: discord.Interaction,
+                    button: Button,
+                    style_id=style["id"],
+                ):
+                    # スタイル変更をここで処理
+                    valid, speaker_name, style_name = voice_config.validate_style_id(
+                        style_id
                     )
-                voice_config.update_style_setting(
-                    interaction.guild.id, interaction.user.id, style_id, voice_scope
-                )
-                speaker_character_id, speaker_display_name = get_character_info(
-                    speaker_name
-                )
-                speaker_url = f"{DORMITORY_URL_BASE}/{speaker_character_id}/"
-                await interaction.response.send_message(
-                    f"{voice_scope_description[voice_scope]}が「[{speaker_display_name}]({speaker_url}) {style_name}」に更新されました。"
+                    if not valid:
+                        await interaction.response.edit_message(
+                            f"スタイルID {style_id} は無効です。`/list`で有効なIDを確認し、正しいIDを入力してください。",
+                            view=view,
+                        )
+                    voice_config.update_style_setting(
+                        interaction.guild.id, interaction.user.id, style_id, voice_scope
+                    )
+                    speaker_character_id, speaker_display_name = get_character_info(
+                        speaker_name
+                    )
+                    speaker_url = f"{DORMITORY_URL_BASE}/{speaker_character_id}/"
+                    await interaction.response.send_message(
+                        f"{voice_scope_description[voice_scope]}が「[{speaker_display_name}]({speaker_url}) {style_name}」に更新されました。"
+                    )
+
+                # Replace the existing 'style_button.callback' assignment with the following:
+                style_button.callback = (
+                    lambda interaction, button=style_button, style_id=style[
+                        "id"
+                    ]: asyncio.create_task(
+                        handle_style_button_click(interaction, button, style_id)
+                    )
                 )
 
-            # Replace the existing 'style_button.callback' assignment with the following:
-            style_button.callback = (
-                lambda interaction, button=style_button, style_id=style[
-                    "id"
-                ]: asyncio.create_task(
-                    handle_style_button_click(interaction, button, style_id)
-                )
-            )
-
-            view.add_item(style_button)
-        await interaction.response.edit_message(content=content, view=view)
+                view.add_item(style_button)
+            await interaction.response.edit_message(content=content, view=view)
 
 
 def setup_info_command(bot, voice_config):
