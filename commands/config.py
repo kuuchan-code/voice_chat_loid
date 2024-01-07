@@ -54,12 +54,14 @@ def setup_config_command(bot, voice_config):
             self.voice_scope = voice_scope
             self.current_page = 0
 
+            # 初期化時にボタンの無効化の状態を設定
+            self.first_button.disabled = True
+            self.previous_button.disabled = True
+
         @discord.ui.button(label="<<", style=discord.ButtonStyle.blurple)
-        async def first_button(
-            self, interaction: discord.Interaction, button: discord.ui.Button
-        ):
+        async def first_button(self, interaction: discord.Interaction, button: discord.ui.Button):
             self.current_page = 0
-            await self.update_speaker_list(interaction)
+            await update_speaker_list(interaction, self, self.current_page)
 
         @discord.ui.button(label="<", style=discord.ButtonStyle.blurple)
         async def previous_button(
@@ -87,7 +89,6 @@ def setup_config_command(bot, voice_config):
         ):
             self.current_page = len(self.speakers) - 1
             await self.update_speaker_list(interaction)
-
         async def update_speaker_list(self, interaction: discord.Interaction):
             self.first_button.disabled = self.current_page == 0
             self.last_button.disabled = self.current_page == len(self.speakers) - 1
