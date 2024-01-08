@@ -1,7 +1,7 @@
 import asyncio
 import discord
 import jaconv
-from settings import APPROVED_GUILD_OBJECTS, DORMITORY_URL_BASE
+from settings import approved_guild_objects, DORMITORY_URL_BASE
 from discord.ui import Button, View
 
 from VoiceSynthConfig import VoiceSynthConfig
@@ -9,7 +9,7 @@ from VoiceSynthConfig import VoiceSynthConfig
 
 def setup_config_command(bot, voice_config: VoiceSynthConfig):
     @bot.tree.command(
-        name="config", guilds=APPROVED_GUILD_OBJECTS, description="読み上げ音声を設定します。"
+        name="config", guilds=approved_guild_objects, description="読み上げ音声を設定します。"
     )
     async def config(interaction: discord.Interaction):
         voice_scope_description = get_voice_scope_description(interaction)

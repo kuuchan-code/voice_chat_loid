@@ -1,12 +1,12 @@
 import discord
-from settings import APPROVED_GUILD_OBJECTS
+from settings import approved_guild_objects
 from VoiceSynthConfig import VoiceSynthConfig
 
 
 def setup_info_command(bot, voice_config: VoiceSynthConfig):
     @bot.tree.command(
         name="info",
-        guilds=APPROVED_GUILD_OBJECTS,
+        guilds=approved_guild_objects,
         description="現在の読み上げ音声スコープと設定を表示します。",
     )
     async def info(interaction: discord.Interaction):

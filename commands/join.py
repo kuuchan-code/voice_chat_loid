@@ -1,7 +1,7 @@
 import logging
 import discord
 from VoiceSynth import VoiceSynth
-from settings import APPROVED_GUILD_OBJECTS, ERROR_MESSAGES
+from settings import approved_guild_objects, error_messages
 from VoiceSynthConfig import VoiceSynthConfig
 from VoiceSynthServer import VoiceSynthServer
 
@@ -10,7 +10,7 @@ def setup_join_command(bot, voice: VoiceSynth, voice_server: VoiceSynthServer, v
     # ボットをボイスチャンネルに接続するコマンド
     @bot.tree.command(
         name="join",
-        guilds=APPROVED_GUILD_OBJECTS,
+        guilds=approved_guild_objects,
         description="ボットをボイスチャンネルに接続し、読み上げを開始します。",
     )
     async def join(interaction: discord.Interaction):
@@ -21,7 +21,7 @@ def setup_join_command(bot, voice: VoiceSynth, voice_server: VoiceSynthServer, v
 
         # ユーザーがボイスチャンネルにいない場合、エラーメッセージを表示
         if not interaction.user.voice or not interaction.user.voice.channel:
-            await interaction.followup.send(ERROR_MESSAGES["connection"])
+            await interaction.followup.send(error_messages["connection"])
             return
 
         # VCにすでに接続されている場合

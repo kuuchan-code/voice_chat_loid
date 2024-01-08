@@ -12,7 +12,7 @@ from commands.join import setup_join_command
 from commands.leave import setup_leave_command
 from commands.skip import setup_skip_command
 from VoiceSynthConfig import VoiceSynthConfig
-from settings import APPROVED_GUILD_IDS_INT, BotSettings, TOKEN, VoiceVoxSettings
+from settings import approved_guild_ids_int, BotSettings, TOKEN, VoiceVoxSettings
 from VoiceSynthServer import VoiceSynthServer
 
 # Improved logging format and level
@@ -47,55 +47,56 @@ def wait_for_voice_server(url, max_attempts=10, delay=5):
     return False
 
 
-if __name__ == "__main__" and wait_for_voice_server(VoiceVoxSettings.SPEAKERS_URL):
-    intents = discord.Intents.default()
-    intents.message_content = True
-    voice_config = VoiceSynthConfig()
-    bot = commands.Bot(command_prefix=BotSettings.BOT_PREFIX, intents=intents)
-    voice_server = VoiceSynthServer()
-    voice = VoiceSynth()
-    handler = DiscordMessageHandler()
+if __name__ == "__main__":
+    if wait_for_voice_server(voicevox_settings.SPEAKERS_URL):
+        intents = discord.Intents.default()
+        intents.message_content = True
+        voice_config = VoiceSynthConfig()
+        bot = commands.Bot(command_prefix=BotSettings.BOT_PREFIX, intents=intents)
+        voice_server = VoiceSynthServer()
+        voice = VoiceSynth()
+        handler = DiscordMessageHandler()
 
-    setup_join_command(bot, voice, voice_server, voice_config)
-    setup_leave_command(bot, voice_server, voice_config)
-    setup_config_command(bot, voice_config)
-    setup_info_command(bot, voice_config)
-    setup_skip_command(bot, voice_server)
+        setup_join_command(bot, voice, voice_server, voice_config)
+        setup_leave_command(bot, voice_server, voice_config)
+        setup_config_command(bot, voice_config)
+        setup_info_command(bot, voice_config)
+        setup_skip_command(bot, voice_server)
 
-    @bot.event
-    async def on_ready():
-        try:
-            logging.info(f"Logged in as {bot.user.name}")
-            await bot.change_presence(activity=discord.Game(name=BotSettings.GAME_NAME))
-            for guild_id in APPROVED_GUILD_IDS_INT:
-                try:
-                    guild = bot.get_guild(guild_id)
-                    if guild:
-                        await bot.tree.sync(guild=guild)
-                        bot.loop.create_task(
-                            voice_server.process_playback_queue(guild.id)
-                        )
-                    else:
-                        logging.error(f"Unable to find guild with ID: {guild_id}")
-                except Exception as e:
-                    logging.error(f"Error syncing commands for guild {guild_id}: {e}")
-        except Exception as e:
-            logging.error(f"Error occurred in on_ready: {e}")
+        @bot.event
+        async def on_ready():
+            try:
+                logging.info(f"Logged in as {bot.user.name}")
+                await bot.change_presence(activity=discord.Game(name=BotSettings.GAME_NAME))
+                for guild_id in approved_guild_ids_int:
+                    try:
+                        guild = bot.get_guild(guild_id)
+                        if guild:
+                            await bot.tree.sync(guild=guild)
+                            bot.loop.create_task(
+                                voice_server.process_playback_queue(guild.id)
+                            )
+                        else:
+                            logging.error(f"Unable to find guild with ID: {guild_id}")
+                    except Exception as e:
+                        logging.error(f"Error syncing commands for guild {guild_id}: {e}")
+            except Exception as e:
+                logging.error(f"Error occurred in on_ready: {e}")
 
-    @bot.event
-    async def on_message(message: discord.Message):
-        if message.author.bot:  # これでメッセージがボットからのものかどうかをチェック
-            return
-        await bot.process_commands(message)
-        await voice.handle_message(voice_config, voice_server, message, handler)
+        @bot.event
+        async def on_message(message: discord.Message):
+            if message.author.bot:  # これでメッセージがボットからのものかどうかをチェック
+                return
+            await bot.process_commands(message)
+            await voice.handle_message(voice_config, voice_server, message, handler)
 
-    @bot.event
-    async def on_voice_state_update(member: discord.Member, before, after):
-        await voice.handle_voice_state_update(
-            voice_config, voice_server, bot, member, before, after
-        )
+        @bot.event
+        async def on_voice_state_update(member: discord.Member, before, after):
+            await voice.handle_voice_state_update(
+                voice_config, voice_server, bot, member, before, after
+            )
 
-    bot.run(TOKEN)
-    asyncio.run(voice_server.close_session())  # Bot停止時にセッションを閉じる
-else:
-    print("Server did not become available in time. Exiting.")
+        bot.run(TOKEN)
+        asyncio.run(voice_server.close_session())  # Bot停止時にセッションを閉じる
+    else:
+        print("Server did not become available in time. Exiting.")
