@@ -28,9 +28,6 @@ class VOICEVOXSettings:
 
 
 APPROVED_GUILD_IDS_INT = config["guild_settings"]["approved_guild_ids"]
-APPROVED_GUILD_OBJECTS = [
-    discord.Object(id=guild_id) for guild_id in APPROVED_GUILD_IDS_INT
-]
 
 error_messages = config["error_messages"]
 info_messages = config["info_messages"]
