@@ -3,6 +3,7 @@ import discord
 import emoji
 import jaconv
 import alkana
+from langdetect import detect
 
 
 class SpeechTextFormatter:
@@ -58,9 +59,57 @@ class SpeechTextFormatter:
     def replace_pattern(self, pattern, text, replace_func):
         return pattern.sub(replace_func, text)
 
+    def spanish_to_katakana(self, word):
+        # スペイン語の発音規則に基づくカタカナ変換マッピング
+        conversion_map = {
+            "a": "ア",
+            "e": "エ",
+            "i": "イ",
+            "o": "オ",
+            "u": "ウ",
+            "b": "ブ",
+            "c": "ク",
+            "d": "ド",
+            "f": "フ",
+            "g": "グ",
+            "h": "ホ",
+            "j": "ハ",
+            "k": "カ",
+            "l": "ル",
+            "m": "ム",
+            "n": "ン",
+            "ñ": "ニ",
+            "p": "プ",
+            "q": "ク",
+            "r": "ル",
+            "s": "ス",
+            "t": "ト",
+            "v": "ブ",
+            "w": "ウ",
+            "x": "シ",
+            "y": "ジ",
+            "z": "ス",
+            "ch": "チ",
+            "ll": "ジ",
+            "rr": "ルル",
+        }
+
+        # スペイン語の単語を小文字に変換
+        word = word.lower()
+
+        # 特殊な文字列の置換
+        for special_char in ["ch", "ll", "rr"]:
+            word = word.replace(special_char, conversion_map[special_char])
+
+        # 一文字ずつカタカナに変換
+        katakana_word = ""
+        for char in word:
+            katakana_word += conversion_map.get(char, "")  # マップにない文字は無視
+
+        return katakana_word
+
     async def replace_content(self, text, message: discord.Message):
-        text = self.replace_english_to_kana(
-            text)  # First replace English words
+        text = self.replace_english_to_kana(text)  # First replace English words
         if message:
             replace_operations = [
                 (
@@ -78,12 +127,13 @@ class SpeechTextFormatter:
             ]
             for pattern, func in replace_operations:
                 text = self.replace_pattern(pattern, text, func)
+        # 言語検出とカタカナ変換
+        if detect(text) == "es":
+            text = self.spanish_to_katakana(text)
         text = self.CUSTOM_EMOJI_PATTERN.sub(
             self.replace_custom_emoji_name_to_kana, text
         )
         text = self.URL_PATTERN.sub("URL省略", text)
         text = self.LAUGH_PATTERN.sub(self.laugh_replace, text)
-        text = emoji.demojize(
-            text, language="ja"
-        )
+        text = emoji.demojize(text, language="ja")
         return text
