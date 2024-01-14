@@ -4,7 +4,7 @@ import emoji
 import jaconv
 import alkana
 from langdetect import detect
-
+import langid
 
 class SpeechTextFormatter:
     USER_MENTION_PATTERN = re.compile(r"<@!?(\d+)>")
@@ -127,8 +127,8 @@ class SpeechTextFormatter:
             ]
             for pattern, func in replace_operations:
                 text = self.replace_pattern(pattern, text, func)
-        # 言語検出とカタカナ変換
-        if detect(text) == "es":
+        lang, _ = langid.classify(text)
+        if lang == "es":
             text = self.spanish_to_katakana(text)
         text = self.CUSTOM_EMOJI_PATTERN.sub(
             self.replace_custom_emoji_name_to_kana, text
