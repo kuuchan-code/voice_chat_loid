@@ -183,6 +183,8 @@ class VoiceSynthEventProcessor:
                     if "additional_channel" in guild_settings:
                         del guild_settings["additional_channel"]
                     self.synth_config.save_style_settings()  # 変更を保存
+                    self.synth_config.set_expected_disconnection(
+                        guild_id, True)
                     await voice_client.disconnect()
             # ボットがボイスチャンネルに接続しているかどうかを確認
             voice_client = member.guild.voice_client

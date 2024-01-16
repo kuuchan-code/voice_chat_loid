@@ -208,7 +208,7 @@ async def normal_join_procedure(
         if voice_client and voice_client.is_connected():
             await voice_client.disconnect()
             synth_config.set_expected_disconnection(
-                guild_id,  False)
+                guild_id,  True)
             synth_config.set_manual_disconnection(
                 guild_id,  False)
         # ボットを新しいボイスチャンネルに接続する
