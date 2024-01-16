@@ -67,7 +67,7 @@ async def connect_to_voice_channel(
 
         voice_client = await channel.connect(self_deaf=True)
         synth_config.set_expected_disconnection(
-                 False)
+            False)
         # 接続後にフラグをFalseに設定
         synth_config.set_manual_disconnection(
             interaction.guild_id,  False)

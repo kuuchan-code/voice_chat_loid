@@ -78,8 +78,7 @@ class VoiceSynthEventProcessor:
             if member == bot.user:
                 # ボットがボイスチャンネルから切断された場合
                 if before.channel is not None and after.channel is None:
-                    # 再接続ロジックをここに記述
-
+                    # 再接続ロジック
                     channel = bot.get_channel(channel_id)
                     if channel:
                         await channel.connect()
@@ -108,10 +107,17 @@ class VoiceSynthEventProcessor:
                             # 接続後にフラグをFalseに設定
                             self.synth_config.set_expected_disconnection(
                                 guild_id, False)
-                            # テキストチャンネルの設定を更新
-                            self.synth_config.voice_synthesis_settings[guild_id][
-                                "text_channel"
-                            ] = after.channel.id
+                            # キーが存在するか確認する
+                            if guild_id in self.synth_config.voice_synthesis_settings:
+                                # キーが存在する場合の処理
+                                # テキストチャンネルの設定を更新
+                                self.synth_config.voice_synthesis_settings[guild_id][
+                                    "text_channel"
+                                ] = after.channel.id
+                            else:
+                                # キーが存在しない場合の処理
+                                self.synth_config.voice_synthesis_settings[guild_id] = {
+                                }
                             self.synth_config.save_style_settings()
                             # 追加の読み上げ対象チャンネルをクリア
                             self.synth_config.unlist_channel(guild_id)
