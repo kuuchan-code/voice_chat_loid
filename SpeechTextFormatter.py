@@ -19,27 +19,27 @@ class SpeechTextFormatter:
         # MeCabの初期化
         self.mecab = MeCab.Tagger("-Owakati")
 
-    def mecab_tokenize(self, text):
+    async def mecab_tokenize(self, text):
         # MeCabを使用してテキストを単語に分割する
         result = self.mecab.parse(text)
         return result.split()
 
-    def replace_user_mention(self, match, message: discord.Message):
+    async def replace_user_mention(self, match, message: discord.Message):
         user_id = int(match.group(1))
         user = message.guild.get_member(user_id)
         return user.display_name if user else match.group(0)
 
-    def replace_role_mention(self, match, message: discord.Message):
+    async def replace_role_mention(self, match, message: discord.Message):
         role_id = int(match.group(1))
         role = discord.utils.get(message.guild.roles, id=role_id)
         return role.name if role else match.group(0)
 
-    def replace_channel_mention(self, match, message: discord.Message):
+    async def replace_channel_mention(self, match, message: discord.Message):
         channel_id = int(match.group(1))
         channel = message.guild.get_channel(channel_id)
         return channel.name if channel else match.group(0)
 
-    def replace_custom_emoji_name_to_kana(self, match):
+    async def replace_custom_emoji_name_to_kana(self, match):
         # 絵文字の名前をキャプチャする
         emoji_name = match.group(0)
         # 絵文字名からID部分を取り除く
@@ -47,7 +47,7 @@ class SpeechTextFormatter:
         # 絵文字名をひらがなに変換して返す
         return jaconv.alphabet2kana(emoji_name_cleaned) + " "
 
-    def replace_english_to_kana(self, words):
+    async def replace_english_to_kana(self, words):
         processed_words = []
         for word in words:
             if re.match(self.ENGLISH_WORD_PATTERN, word):
@@ -59,7 +59,7 @@ class SpeechTextFormatter:
             processed_words.append(processed_word)
         return processed_words
 
-    def laugh_replace(self, words):
+    async def laugh_replace(self, words):
         # 単語リストを受け取り、笑い表現を置換
         replaced_words = []
         for word in words:
@@ -69,7 +69,7 @@ class SpeechTextFormatter:
                 replaced_words.append(word)
         return replaced_words
 
-    def replace_pattern(self, pattern, text, replace_func):
+    async def replace_pattern(self, pattern, text, replace_func):
         return pattern.sub(replace_func, text)
 
     async def replace_content(self, text, message: discord.Message):

@@ -338,7 +338,7 @@ class VoiceSynthEventProcessor:
             file_message = f"{'と'.join(file_messages)}が投稿されました。"
             await self._announce_message(file_message, message)
 
-    def _get_file_messages(self, attachments):
+    async def _get_file_messages(self, attachments):
         file_counts = {"image/": 0, "video/": 0,
                        "audio/": 0, "text/": 0, "other": 0}
         for attachment in attachments:
@@ -349,7 +349,7 @@ class VoiceSynthEventProcessor:
         return [self._format_file_message(ft, count) for ft, count in file_counts.items() if count > 0]
 
     @staticmethod
-    def _format_file_message(file_type, count):
+    async def _format_file_message(file_type, count):
         type_names = {"image/": "画像", "video/": "動画",
                       "audio/": "音声ファイル", "text/": "テキストファイル", "other": "ファイル"}
         return f"{count}個の{type_names[file_type]}" if count > 1 else type_names[file_type]

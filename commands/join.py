@@ -37,7 +37,7 @@ async def execute_welcome_message(
         )
 
 
-def create_info_message(
+async def create_info_message(
     interaction: discord.Interaction, text_channel_id, speaker_details
 ):
     user_display_name = interaction.user.display_name

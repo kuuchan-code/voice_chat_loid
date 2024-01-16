@@ -51,7 +51,7 @@ async def wait_for_synth_service(url, max_attempts=10, delay=5):
 async def main():
     try:
         # 非同期処理に変更
-        if await wait_for_synth_service(VOICEVOXSettings.ENGINE_URLS[0] + VOICEVOXSettings.SPEAKERS_URL):
+        if await wait_for_synth_service(VOICEVOXSettings.LOCAL_ENGINE_URL + VOICEVOXSettings.SPEAKERS_URL):
             intents = discord.Intents.default()
             intents.message_content = True
             bot = commands.Bot(
