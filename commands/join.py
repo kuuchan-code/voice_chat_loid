@@ -66,8 +66,6 @@ async def connect_to_voice_channel(
         synth_config.unlist_channel(interaction.guild_id)
 
         voice_client = await channel.connect(self_deaf=True)
-        synth_config.set_expected_disconnection(
-            False)
         # 接続後にフラグをFalseに設定
         synth_config.set_manual_disconnection(
             interaction.guild_id,  False)
@@ -207,14 +205,10 @@ async def normal_join_procedure(
         # ボットが既にボイスチャンネルに接続している場合は、そのチャンネルを離脱する
         if voice_client and voice_client.is_connected():
             await voice_client.disconnect()
-            synth_config.set_expected_disconnection(
-                guild_id,  True)
             synth_config.set_manual_disconnection(
                 guild_id,  False)
         # ボットを新しいボイスチャンネルに接続する
         voice_client = await interaction.user.voice.channel.connect(self_deaf=True)
-        synth_config.set_expected_disconnection(
-            guild_id,  False)
         await welcome_user(
             synth_config, synth_service, interaction, voice_client, text_processor, bot
         )

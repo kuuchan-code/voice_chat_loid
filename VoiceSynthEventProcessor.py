@@ -216,35 +216,6 @@ class VoiceSynthEventProcessor:
                     view=ConnectionButtons(
                         self.synth_config, self.synth_service, bot),
                 )
-        # ボットがボイスチャンネルから切断された場合
-        if member == bot.user and before.channel is not None and after.channel is None:
-            guild_id = before.channel.guild.id
-            # 切断が予期されていない場合
-            if not self.synth_config.get_expected_disconnection(guild_id):
-                try:
-                    # 再接続を試みる
-                    voice_client = await before.channel.connect(self_deaf=True)
-                    self.synth_config.set_manual_disconnection(guild_id, False)
-                    self.synth_config.set_expected_disconnection(
-                        guild_id, False)
-
-                    # ボイスチャンネルに再接続したことをログに記録
-                    logging.info(
-                        f"Reconnected to voice channel in guild: {guild_id}")
-
-                    # 再接続成功時の読み上げメッセージ
-                    welcome_message = "再接続しました。読み上げを再開します。"
-                    announcement_style_id = self.synth_config.get_announcement_style_id(
-                        guild_id)
-                    await self.synth_service.text_to_speech(
-                        voice_client,
-                        welcome_message,
-                        announcement_style_id,
-                        guild_id,
-                        self.text_processor,
-                    )
-                except Exception as e:
-                    logging.error(f"Failed to reconnect to voice channel: {e}")
 
     async def handle_message(
         self,
