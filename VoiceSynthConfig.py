@@ -25,10 +25,10 @@ class VoiceSynthConfig:
         return self.manually_disconnected.get(guild_id, False)
 
     def set_expected_disconnection(self, guild_id, value):
-        self.manually_disconnected[guild_id] = value
+        self.expected_disconnection[guild_id] = value
 
     def get_expected_disconnection(self, guild_id):
-        return self.manually_disconnected.get(guild_id, True)
+        return self.expected_disconnection.get(guild_id, True)
 
     def toggle_auto_connect(self, guild_id):
         auto_connect = self.voice_synthesis_settings.get(

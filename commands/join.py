@@ -213,7 +213,7 @@ async def normal_join_procedure(
                 guild_id,  False)
         # ボットを新しいボイスチャンネルに接続する
         voice_client = await interaction.user.voice.channel.connect(self_deaf=True)
-        synth_config.se(
+        synth_config.set_expected_disconnection(
             guild_id,  False)
         await welcome_user(
             synth_config, synth_service, interaction, voice_client, text_processor, bot

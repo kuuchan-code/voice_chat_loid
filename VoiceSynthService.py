@@ -53,8 +53,6 @@ class VoiceSynthService:
             logging.error(
                 f"Unexpected error speaking line: {e}", exc_info=True)
             await self.send_error_message(voice_client, "予期せぬエラーが発生しました。")
-            if voice_client.is_connected():
-                await voice_client.disconnect()
 
     async def send_error_message(self, voice_client, message):
         # エラーメッセージを送信するための専用メソッド
@@ -118,8 +116,6 @@ class VoiceSynthService:
             await self._play_audio(voice_client, voice_data)
         except Exception as e:
             logging.error(f"Error in speak_line: {e}")
-            if voice_client.is_connected():
-                await voice_client.disconnect()
             raise  # 再発生させて上位レベルでキャッチ
 
     async def _play_audio(self, voice_client: discord.VoiceClient, voice_data):
