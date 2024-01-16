@@ -18,11 +18,11 @@ class VoiceSynthConfig:
         self.manually_disconnected = {}  # ギルドごとのフラグ
         self.expected_disconnection = {}
 
-    def set_manual_disconnection(self, guild_id, value):
-        self.manually_disconnected[guild_id] = value
+    def set_manual_disconnection(self, guild_id, channel_id, value):
+        self.manually_disconnected[(guild_id, channel_id)] = value
 
-    def get_manual_disconnection(self, guild_id):
-        return self.manually_disconnected.get(guild_id, False)
+    def get_manual_disconnection(self, guild_id, channel_id):
+        return self.manually_disconnected.get((guild_id, channel_id), False)
 
     def set_expected_disconnection(self, guild_id, value):
         self.manually_disconnected[guild_id] = value
