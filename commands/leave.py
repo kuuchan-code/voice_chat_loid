@@ -25,7 +25,7 @@ async def leave_logic(interaction: discord.Interaction, synth_config: VoiceSynth
     synth_config.unlist_channel(interaction.guild_id)
     # ボイスクライアントを切断
     await interaction.guild.voice_client.disconnect()
-    synth_config.set_manual_disconnection(guild_id, channel_id, True)
+    synth_config.set_manual_disconnection(guild_id, True)
     # ボットが手動で切断されたことをユーザーに通知
     await interaction.response.send_message("ボットは手動で切断されました。再接続するには `/join` コマンドを使用してください。")
 

@@ -16,13 +16,18 @@ class VoiceSynthConfig:
         self.speakers = await self.fetch_json(VOICEVOXSettings.SPEAKERS_URL)
         self.voice_synthesis_settings = self.load_style_settings()
         self.manually_disconnected = {}  # ギルドごとのフラグ
-    # /leave コマンドで使用されるメソッド
+        self.expected_disconnection = {}
+    def set_manual_disconnection(self, guild_id, value):
+        self.manually_disconnected[guild_id] = value
 
-    def set_manual_disconnection(self, guild_id, channel_id, value):
-        self.manually_disconnected[(guild_id, channel_id)] = value
+    def get_manual_disconnection(self, guild_id):
+        return self.manually_disconnected.get(guild_id, False)
+    def set_expected_disconnection(self, guild_id, value):
+        self.manually_disconnected[guild_id] = value
 
-    def get_manual_disconnection(self, guild_id, channel_id):
-        return self.manually_disconnected.get((guild_id, channel_id), False)
+    def get_expected_disconnection(self, guild_id):
+        return self.manually_disconnected.get(guild_id, True)
+
 
     def toggle_auto_connect(self, guild_id):
         auto_connect = self.voice_synthesis_settings.get(

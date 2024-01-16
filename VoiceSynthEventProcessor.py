@@ -71,133 +71,154 @@ class VoiceSynthEventProcessor:
 
         guild_id = member.guild.id
         channel_id = after.channel.id if after.channel else None
-        if self.synth_config.get_manual_disconnection(guild_id, channel_id):
-            return  # このチャンネルに対してマニュアル切断が有効な場合は何もしない
-        # ボット自身の状態変更を無視
-        if member == bot.user:
-            return
+        # 意図しない切断
+        if not self.synth_config.get_expected_disconnection(guild_id):
+            # 再接続ロジック
+            # ボット自身のボイスステート変更をチェック
+            if member == bot.user:
+                # ボットがボイスチャンネルから切断された場合
+                if before.channel is not None and after.channel is None:
+                    # 再接続ロジックをここに記述
 
-        # ボットが接続しているボイスチャンネルを取得
-        voice_client = member.guild.voice_client
+                    channel = bot.get_channel(channel_id)
+                    if channel:
+                        await channel.connect()
+        # 意図的な切断
+        else:
+            if self.synth_config.get_manual_disconnection(guild_id):
+                return  # このチャンネルに対してマニュアル切断が有効な場合は何もしない
+            # ボット自身の状態変更を無視
+            if member == bot.user:
+                return
 
-        # ボットが新しいVCに接続した場合の処理
-        if before.channel != after.channel and after.channel is not None:
-            # 自動接続が有効か確認
-            if self.synth_config.get_auto_connect_state(guild_id):
-                if voice_client is None or not voice_client.is_connected():
-                    # ボットが接続していない場合、新しいVCに接続を試みる
-                    try:
-                        voice_client = await after.channel.connect(self_deaf=True)
-                        # テキストチャンネルの設定を更新
-                        self.synth_config.voice_synthesis_settings[guild_id][
-                            "text_channel"
-                        ] = after.channel.id
-                        self.synth_config.save_style_settings()
-                        # 追加の読み上げ対象チャンネルをクリア
-                        self.synth_config.unlist_channel(guild_id)
-                        announcement_style_id = self.synth_config.get_announcement_style_id(
-                            guild_id
-                        )
-                        message = create_info_message(
-                            member, after.channel.id, guild_id, self.synth_config
-                        )
-                        await voice_client.channel.send(
-                            "**読み上げを開始します。\n**" + message,
-                            view=ConnectionButtons(
-                                self.synth_config, self.synth_service, bot),
-                        )
-                        await self.synth_service.clear_playback_queue(guild_id)
-                        # 接続成功時の読み上げメッセージ
-                        welcome_message = "読み上げを開始します。"
-                        await self.synth_service.text_to_speech(
-                            voice_client,
-                            welcome_message,
-                            announcement_style_id,
-                            guild_id,
-                            self.text_processor,
-                        )
+            # ボットが接続しているボイスチャンネルを取得
+            voice_client = member.guild.voice_client
 
-                    except discord.ClientException as e:
-                        logging.error(f"Connection error: {e}")
-                    return
-        if not voice_client or not voice_client.channel:
-            return
+            # ボットが新しいVCに接続した場合の処理
+            if before.channel != after.channel and after.channel is not None:
+                # 自動接続が有効か確認
+                if self.synth_config.get_auto_connect_state(guild_id):
+                    if voice_client is None or not voice_client.is_connected():
+                        # ボットが接続していない場合、新しいVCに接続を試みる
+                        try:
+                            voice_client = await after.channel.connect(self_deaf=True)
+                            # 接続後にフラグをFalseに設定
+                            self.synth_config.set_manual_disconnection(
+                                guild_id, False)
+                            # 接続後にフラグをFalseに設定
+                            self.synth_config.set_expected_disconnection(
+                                guild_id, False)
+                            # テキストチャンネルの設定を更新
+                            self.synth_config.voice_synthesis_settings[guild_id][
+                                "text_channel"
+                            ] = after.channel.id
+                            self.synth_config.save_style_settings()
+                            # 追加の読み上げ対象チャンネルをクリア
+                            self.synth_config.unlist_channel(guild_id)
+                            announcement_style_id = self.synth_config.get_announcement_style_id(
+                                guild_id
+                            )
+                            message = create_info_message(
+                                member, after.channel.id, guild_id, self.synth_config
+                            )
+                            await voice_client.channel.send(
+                                "**読み上げを開始します。\n**" + message,
+                                view=ConnectionButtons(
+                                    self.synth_config, self.synth_service, bot),
+                            )
+                            await self.synth_service.clear_playback_queue(guild_id)
+                            # 接続成功時の読み上げメッセージ
+                            welcome_message = "読み上げを開始します。"
+                            await self.synth_service.text_to_speech(
+                                voice_client,
+                                welcome_message,
+                                announcement_style_id,
+                                guild_id,
+                                self.text_processor,
+                            )
 
-        if (
-            before.channel != voice_client.channel
-            and after.channel == voice_client.channel
-        ):
-            await self.announce_presence(
-                member,
-                voice_client,
-                "entered",
-            )
-        # ユーザーがボイスチャンネルから退出した場合の処理
-        elif (
-            before.channel == voice_client.channel
-            and after.channel != voice_client.channel
-        ):
-            # ボイスチャンネルに他の非ボットユーザーがまだいるか確認
-            if any(not user.bot for user in before.channel.members if user != member):
+                        except discord.ClientException as e:
+                            logging.error(f"Connection error: {e}")
+                        return
+            if not voice_client or not voice_client.channel:
+                return
+
+            if (
+                before.channel != voice_client.channel
+                and after.channel == voice_client.channel
+            ):
                 await self.announce_presence(
                     member,
                     voice_client,
-                    "left",
+                    "entered",
                 )
-        if after.channel is None and voice_client and voice_client.channel:
-            # ボイスチャンネルにまだ非ボットユーザーがいるか確認します。
-            if not any(not user.bot for user in voice_client.channel.members):
-                # キューをクリアする
-                await self.synth_service.clear_playback_queue(guild_id)
-                # テキストチャンネルIDと追加チャンネルIDの設定をクリア
-                guild_settings = self.synth_config.voice_synthesis_settings.get(
-                    guild_id, {})
-                if "text_channel" in guild_settings:
-                    del guild_settings["text_channel"]
-                if "additional_channel" in guild_settings:
-                    del guild_settings["additional_channel"]
-                self.synth_config.save_style_settings()  # 変更を保存
-                await voice_client.disconnect()
-        # ボットがボイスチャンネルに接続しているかどうかを確認
-        voice_client = member.guild.voice_client
-        if not voice_client or not voice_client.channel:
-            return
+            # ユーザーがボイスチャンネルから退出した場合の処理
+            elif (
+                before.channel == voice_client.channel
+                and after.channel != voice_client.channel
+            ):
+                # ボイスチャンネルに他の非ボットユーザーがまだいるか確認
+                if any(not user.bot for user in before.channel.members if user != member):
+                    await self.announce_presence(
+                        member,
+                        voice_client,
+                        "left",
+                    )
+            if after.channel is None and voice_client and voice_client.channel:
+                # ボイスチャンネルにまだ非ボットユーザーがいるか確認します。
+                if not any(not user.bot for user in voice_client.channel.members):
+                    # キューをクリアする
+                    await self.synth_service.clear_playback_queue(guild_id)
+                    # テキストチャンネルIDと追加チャンネルIDの設定をクリア
+                    guild_settings = self.synth_config.voice_synthesis_settings.get(
+                        guild_id, {})
+                    if "text_channel" in guild_settings:
+                        del guild_settings["text_channel"]
+                    if "additional_channel" in guild_settings:
+                        del guild_settings["additional_channel"]
+                    self.synth_config.save_style_settings()  # 変更を保存
+                    await voice_client.disconnect()
+            # ボットがボイスチャンネルに接続しているかどうかを確認
+            voice_client = member.guild.voice_client
+            if not voice_client or not voice_client.channel:
+                return
 
-        # ボットのいるチャンネルに他にユーザーがいないか確認
-        if not any(not user.bot for user in voice_client.channel.members):
-            if after.channel:
-                # 新しいチャンネルにボットを接続
-                await voice_client.move_to(after.channel)
-                # 移動後にボットをdeaf状態に設定
-                await voice_client.guild.change_voice_state(channel=after.channel, self_deaf=True)
-                # 新しいチャンネルのテキストチャンネルIDを更新
-                self.synth_config.voice_synthesis_settings[member.guild.id][
-                    "text_channel"
-                ] = after.channel.id
-                # 追加の読み上げチャンネルをクリア
-                if "additional_channel" in self.synth_config.voice_synthesis_settings[member.guild.id]:
-                    del self.synth_config.voice_synthesis_settings[member.guild.id]["additional_channel"]
-                self.synth_config.save_style_settings()
-                # 新しいチャンネルへの移動をアナウンス
-                announcement_style_id = self.synth_config.get_announcement_style_id(
-                    member.guild.id
-                )
-                await self.synth_service.clear_playback_queue(guild_id)
-                await self.synth_service.text_to_speech(
-                    voice_client,
-                    f"読み上げボットが移動しました。",
-                    announcement_style_id,
-                    member.guild.id,
-                    self.text_processor,
-                )
-                await after.channel.send(
-                    "**読み上げボットが移動しました。**\n"
-                    + create_info_message(
-                        member, after.channel.id, guild_id, self.synth_config
-                    ),
-                    view=ConnectionButtons(
-                        self.synth_config, self.synth_service, bot),
-                )
+            # ボットのいるチャンネルに他にユーザーがいないか確認
+            if not any(not user.bot for user in voice_client.channel.members):
+                if after.channel:
+                    # 新しいチャンネルにボットを接続
+                    await voice_client.move_to(after.channel)
+                    # 移動後にボットをdeaf状態に設定
+                    await voice_client.guild.change_voice_state(channel=after.channel, self_deaf=True)
+                    # 新しいチャンネルのテキストチャンネルIDを更新
+                    self.synth_config.voice_synthesis_settings[member.guild.id][
+                        "text_channel"
+                    ] = after.channel.id
+                    # 追加の読み上げチャンネルをクリア
+                    if "additional_channel" in self.synth_config.voice_synthesis_settings[member.guild.id]:
+                        del self.synth_config.voice_synthesis_settings[
+                            member.guild.id]["additional_channel"]
+                    self.synth_config.save_style_settings()
+                    # 新しいチャンネルへの移動をアナウンス
+                    announcement_style_id = self.synth_config.get_announcement_style_id(
+                        member.guild.id
+                    )
+                    await self.synth_service.clear_playback_queue(guild_id)
+                    await self.synth_service.text_to_speech(
+                        voice_client,
+                        f"読み上げボットが移動しました。",
+                        announcement_style_id,
+                        member.guild.id,
+                        self.text_processor,
+                    )
+                    await after.channel.send(
+                        "**読み上げボットが移動しました。**\n"
+                        + create_info_message(
+                            member, after.channel.id, guild_id, self.synth_config
+                        ),
+                        view=ConnectionButtons(
+                            self.synth_config, self.synth_service, bot),
+                    )
 
     async def handle_message(
         self,
