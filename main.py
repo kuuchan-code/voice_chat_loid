@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import asyncio
 import logging
+import os
 import aiohttp
 import discord
 from discord.ext import commands
@@ -22,12 +23,15 @@ from settings_loader import (
 from VoiceSynthService import VoiceSynthService
 import logging.handlers
 
+# Define a safe log file path, e.g., in the home directory
+home_dir = os.path.expanduser("~")
+log_file_path = os.path.join(home_dir, "discord.log")
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
 logging.getLogger("discord.http").setLevel(logging.INFO)
 
 handler = logging.handlers.RotatingFileHandler(
-    filename="discord.log",
+    filename=log_file_path,
     encoding="utf-8",
     maxBytes=32 * 1024 * 1024,  # 32 MiB
     backupCount=5,  # Rotate through 5 files
