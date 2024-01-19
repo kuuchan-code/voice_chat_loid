@@ -20,11 +20,25 @@ from settings_loader import (
     VOICEVOXSettings,
 )
 from VoiceSynthService import VoiceSynthService
+import logging.handlers
 
-# Improved logging format and level
-logging.basicConfig(
-    format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO
+logger = logging.getLogger("discord")
+logger.setLevel(logging.DEBUG)
+logging.getLogger("discord.http").setLevel(logging.INFO)
+
+handler = logging.handlers.RotatingFileHandler(
+    filename="discord.log",
+    encoding="utf-8",
+    maxBytes=32 * 1024 * 1024,  # 32 MiB
+    backupCount=5,  # Rotate through 5 files
 )
+dt_fmt = "%Y-%m-%d %H:%M:%S"
+formatter = logging.Formatter(
+    "[{asctime}] [{levelname:<8}] {name}: {message}", dt_fmt, style="{"
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+formatter.default_msec_format = "%s.%04d"
 
 
 async def is_synth_service_up(url):
@@ -51,23 +65,23 @@ async def wait_for_synth_service(url, max_attempts=10, delay=5):
 async def main():
     try:
         # 非同期処理に変更
-        if await wait_for_synth_service(VOICEVOXSettings.LOCAL_ENGINE_URL + VOICEVOXSettings.SPEAKERS_URL):
+        if await wait_for_synth_service(
+            VOICEVOXSettings.LOCAL_ENGINE_URL + VOICEVOXSettings.SPEAKERS_URL
+        ):
             intents = discord.Intents.default()
             intents.message_content = True
-            bot = commands.Bot(
-                command_prefix=BotSettings.BOT_PREFIX, intents=intents)
+            bot = commands.Bot(command_prefix=BotSettings.BOT_PREFIX, intents=intents)
             synth_service = VoiceSynthService()
-            asyncio.create_task(
-                synth_service.check_and_update_active_engines(1))
+            asyncio.create_task(synth_service.check_and_update_active_engines(1))
             await synth_service.ensure_session()
             synth_config = VoiceSynthConfig()
             await synth_config.async_init()
             text_processor = SpeechTextFormatter()
             synth_event_processor = VoiceSynthEventProcessor(
-                synth_config, synth_service, text_processor)
+                synth_config, synth_service, text_processor
+            )
 
-            setup_join_command(bot, synth_service,
-                               synth_config, text_processor)
+            setup_join_command(bot, synth_service, synth_config, text_processor)
             setup_leave_command(bot, synth_service, synth_config)
             setup_settings_command(bot, synth_config)
             setup_info_command(bot, synth_config)
@@ -84,13 +98,11 @@ async def main():
                     )
                     await bot.tree.sync()
                     for guild in bot.guilds:
-                        logging.info(
-                            f"Guild ID: {guild.id}, Name: {guild.name}")
+                        logging.info(f"Guild ID: {guild.id}, Name: {guild.name}")
                         try:
                             if guild:
                                 bot.loop.create_task(
-                                    synth_service.process_playback_queue(
-                                        guild.id)
+                                    synth_service.process_playback_queue(guild.id)
                                 )
                             else:
                                 logging.error(
@@ -106,17 +118,14 @@ async def main():
             @bot.event
             async def on_guild_join(guild):
                 logging.info(f"Joined new guild: {guild.name}")
-                bot.loop.create_task(
-                    synth_service.process_playback_queue(guild.id))
+                bot.loop.create_task(synth_service.process_playback_queue(guild.id))
 
             @bot.event
             async def on_message(message: discord.Message):
                 if message.author.bot:  # これでメッセージがボットからのものかどうかをチェック
                     return
                 await bot.process_commands(message)
-                await synth_event_processor.handle_message(
-                    message
-                )
+                await synth_event_processor.handle_message(message)
 
             @bot.event
             async def on_voice_state_update(member: discord.Member, before, after):
