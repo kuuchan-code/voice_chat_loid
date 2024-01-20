@@ -6,7 +6,7 @@ After=network.target voicevox-engine.service
 Environment=MECABRC=/etc/mecabrc
 Type=simple
 User=ikeda
-ExecStart=/usr/bin/python3 /home/ikeda/VoiceChatLoid/main.py
+ExecStart=/usr/bin/python3 /home/ikeda/voice_chat_loid/main.py
 Restart=on-failure
 RestartSec=10
 
