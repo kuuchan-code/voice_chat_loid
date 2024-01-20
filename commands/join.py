@@ -29,7 +29,7 @@ async def execute_welcome_message(
             message,
         )
         await interaction.response.send_message(
-            "**読み上げを開始します。\n**" + message,
+            "**読み上げを開始します。**\n" + message,
             view=ConnectionButtons(
                 synth_config, synth_service, bot),
         )
@@ -48,7 +48,7 @@ def create_info_message(
         speaker_details["announcement"],
     )
     return (
-        f"**読み上げを開始します。\n**"
+        f"**読み上げを開始します。**\n"
         f"読み上げチャンネル: <#{text_channel_id}>\n"
         f"{user_display_name}さんの読み上げ音声: [{user[0]}]\n"
         f"入退室時等の音声（サーバー設定）: [{announcement[0]}]\n"

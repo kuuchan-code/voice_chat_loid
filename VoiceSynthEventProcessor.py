@@ -102,7 +102,7 @@ class VoiceSynthEventProcessor:
                             member, after.channel.id, guild_id, self.synth_config
                         )
                         await voice_client.channel.send(
-                            "**読み上げを開始します。\n**" + message,
+                            "**読み上げを開始します。**\n" + message,
                             view=ConnectionButtons(
                                 self.synth_config, self.synth_service, bot),
                         )
