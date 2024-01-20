@@ -28,7 +28,7 @@ async def execute_welcome_message(
             text_processor,
             message,
         )
-        await voice_client.channel.send(
+        await interaction.response.send_message(
             "**読み上げを開始します。\n**" + message,
             view=ConnectionButtons(
                 synth_config, synth_service, bot),
@@ -36,8 +36,7 @@ async def execute_welcome_message(
     except Exception as e:
         logging.error(f"Welcome message execution failed: {e}")
         await interaction.response.send_message(
-            error_messages["welcome"], ephemeral=True
-        )
+            error_messages["welcome"], ephemeral=True)
 
 
 def create_info_message(
