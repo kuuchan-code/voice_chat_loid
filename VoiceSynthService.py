@@ -141,7 +141,7 @@ class VoiceSynthService:
             self.session = aiohttp.ClientSession()
         return self.session
 
-    def get_guild_playback_queue(self, guild_id):
+    def get_guild_playback_queue(self, guild_id) -> asyncio.Queue:
         """指定されたギルドIDのplayback_queueを取得または作成します。"""
         if guild_id not in self.guild_playback_queues:
             self.guild_playback_queues[guild_id] = asyncio.Queue()
