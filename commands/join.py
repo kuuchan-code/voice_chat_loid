@@ -1,6 +1,7 @@
 import logging
 import discord
 from SpeechTextFormatter import SpeechTextFormatter
+from VoiceSynthEventProcessor import ConnectionButtons
 from settings_loader import error_messages
 from VoiceSynthConfig import VoiceSynthConfig
 from VoiceSynthService import VoiceSynthService
@@ -27,8 +28,10 @@ async def execute_welcome_message(
             text_processor,
             message,
         )
-        await interaction.response.send_message(
-            message,
+        await voice_client.channel.send(
+            "**読み上げを開始します。\n**" + message,
+            view=ConnectionButtons(
+                synth_config, synth_service, bot),
         )
     except Exception as e:
         logging.error(f"Welcome message execution failed: {e}")
