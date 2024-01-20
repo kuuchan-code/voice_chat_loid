@@ -307,7 +307,7 @@ class VoiceSynthEventProcessor:
             _, user_display_name = self.synth_config.get_character_info(
                 user_speaker_name
             )  # display_nameを取得
-            send_message = f"{member.display_name}さんの読み上げ音声: [{user_display_name}] - {user_style_name}"
+            send_message = f"{member.display_name}さんの読み上げ音声: [{user_display_name}]"
             # テキストチャンネルへのメッセージ送信
             text_channel_id = self.synth_config.voice_synthesis_settings.get(
                 member.guild.id, {}
