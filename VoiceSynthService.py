@@ -199,31 +199,6 @@ class VoiceSynthService:
             logging.error(f"Unexpected error during audio query: {e}")
             return {"error": "Unexpected error"}
 
-    # async def synthesis(self, speaker, query_data):
-    #     session = await self.ensure_session()
-    #     if not session:
-    #         logging.error("Failed to establish session for synthesis")
-    #         return None
-    #     synth_payload = {"speaker": speaker}
-    #     headers = {"Content-Type": "application/json", "Accept": "audio/wav"}
-    #     try:
-    #         async with session.post(
-    #             VOICEVOXSettings.SYNTHESIS_URL,
-    #             headers=headers,
-    #             params=synth_payload,
-    #             data=json.dumps(query_data),
-    #         ) as response:
-    #             if response.status == 200:
-    #                 return await response.read()
-    #             else:
-    #                 logging.error(
-    #                     f"Synthesis request failed with status: {response.status}"
-    #                 )
-    #     except aiohttp.ClientResponseError as e:
-    #         logging.error(f"Response error during synthesis: {e}", exc_info=True)
-    #     except Exception as e:
-    #         logging.error(f"Unexpected error during synthesis: {e}", exc_info=True)
-
     async def speak_line(self, voice_client: discord.VoiceClient, line, style_id):
         try:
             query_data = await self.audio_query(line, style_id)

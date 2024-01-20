@@ -74,9 +74,11 @@ async def main():
         ):
             intents = discord.Intents.default()
             intents.message_content = True
-            bot = commands.Bot(command_prefix=BotSettings.BOT_PREFIX, intents=intents)
+            bot = commands.Bot(
+                command_prefix=BotSettings.BOT_PREFIX, intents=intents)
             synth_service = VoiceSynthService()
-            asyncio.create_task(synth_service.check_and_update_active_engines(1))
+            asyncio.create_task(
+                synth_service.check_and_update_active_engines(1))
             await synth_service.ensure_session()
             synth_config = VoiceSynthConfig()
             await synth_config.async_init()
@@ -85,7 +87,8 @@ async def main():
                 synth_config, synth_service, text_processor
             )
 
-            setup_join_command(bot, synth_service, synth_config, text_processor)
+            setup_join_command(bot, synth_service,
+                               synth_config, text_processor)
             setup_leave_command(bot, synth_service, synth_config)
             setup_settings_command(bot, synth_config)
             setup_info_command(bot, synth_config)
@@ -102,11 +105,13 @@ async def main():
                     )
                     await bot.tree.sync()
                     for guild in bot.guilds:
-                        logging.info(f"Guild ID: {guild.id}, Name: {guild.name}")
+                        logging.info(
+                            f"Guild ID: {guild.id}, Name: {guild.name}")
                         try:
                             if guild:
                                 bot.loop.create_task(
-                                    synth_service.process_playback_queue(guild.id)
+                                    synth_service.process_playback_queue(
+                                        guild.id)
                                 )
                             else:
                                 logging.error(
@@ -122,7 +127,8 @@ async def main():
             @bot.event
             async def on_guild_join(guild):
                 logging.info(f"Joined new guild: {guild.name}")
-                bot.loop.create_task(synth_service.process_playback_queue(guild.id))
+                bot.loop.create_task(
+                    synth_service.process_playback_queue(guild.id))
 
             @bot.event
             async def on_message(message: discord.Message):
