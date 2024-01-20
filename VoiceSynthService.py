@@ -25,9 +25,9 @@ class VoiceSynthService:
                 try:
                     is_up = await self.is_engine_up(engine_url)
                     if is_up and engine_url not in self.active_engines:
-                        await self.activate_engine(self.active_engines, engine_url)
+                        self.activate_engine(self.active_engines, engine_url)
                     elif not is_up and engine_url in self.active_engines:
-                        await self.deactivate_engine(self.active_engines, engine_url)
+                        self.deactivate_engine(self.active_engines, engine_url)
                 except Exception as e:
                     logging.error(f"Error checking engine status: {e}")
 
@@ -41,11 +41,11 @@ class VoiceSynthService:
             logging.debug(f"Engine {engine_url} is not reachable: {e}")
             return False
 
-    async def activate_engine(self, engines: list, engine):
+    def activate_engine(self, engines: list, engine):
         if engine not in engines:
             engines.append(engine)
 
-    async def deactivate_engine(self, engines: list, engine):
+    def deactivate_engine(self, engines: list, engine):
         if engine in engines:
             engines.remove(engine)
 
