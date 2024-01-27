@@ -1,6 +1,6 @@
 {
   "bot_settings": {
-    "bot_prefix": "!",
+    "bot_prefix": ">>",
     "game_name": "/joinで読み上げ開始",
     "max_message_length": 500
   },
