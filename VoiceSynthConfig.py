@@ -211,5 +211,6 @@ class VoiceSynthConfig:
             voice_client
             and voice_client.channel
             and not message.content.startswith(BotSettings.BOT_PREFIX)
+            and not message.content.startswith(";")
             and (message.channel.id == allowed_text_channel_id or message.channel.id == additional_channel_id)
         )
