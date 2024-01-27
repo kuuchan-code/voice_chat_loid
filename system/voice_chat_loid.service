@@ -1,6 +1,6 @@
 [Unit]
 Description=VoiceChatLoid
-After=network.target voicevox-engine.service
+After=network.target voicevox_engine.service
 
 [Service]
 Environment=MECABRC=/etc/mecabrc

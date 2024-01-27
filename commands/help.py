@@ -19,4 +19,4 @@ def setup_help_command(bot):
         description="使用可能なコマンドのリストと説明を表示します。"
     )
     async def help(interaction: discord.Interaction):
-        help_logic(interaction, bot)
+        await help_logic(interaction, bot)

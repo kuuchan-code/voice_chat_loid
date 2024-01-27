@@ -51,7 +51,8 @@ class VoiceSynthService:
 
     async def get_highest_performance_active_engine(self, engines):
         if not engines:
-            return None
+            # アクティブなエンジンがない場合、ローカルエンジンのURLを返す
+            return VOICEVOXSettings.LOCAL_ENGINE_URL
 
         # 仮にエンジンURL自体を性能指標として使用
         # 実際には、ここで性能データに基づいてエンジンを選択する
