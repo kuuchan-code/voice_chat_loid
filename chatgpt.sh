@@ -1,17 +1,18 @@
 #!/bin/bash
 # 出力ファイルをクリア（既存の内容を削除）
-echo "" > python_files.md
+echo "" > nodjs_files.md
 
-# カレントディレクトリとサブディレクトリの.pyファイルを検索し、内容を出力
-find . -name "*.py" | while read file; do
-    echo "### $file" >> python_files.md    # ファイル名を見出しとして追加
-    echo '```python' >> python_files.md    # Python シンタックスハイライトの開始を追加
+# カレントディレクトリとサブディレクトリの.jsファイルを検索し、内容を出力
+# 'node_modules' ディレクトリは除外
+find . -path ./node_modules -prune -o -name "*.js" -print | while read file; do
+    echo "### $file" >> nodjs_files.md    # ファイル名を見出しとして追加
+    echo '```javascript' >> nodjs_files.md    # JavaScript シンタックスハイライトの開始を追加
     
-    # autopep8を使用してPythonファイルをフォーマット
-    autopep8 --in-place "$file"
+    # eslintを使用してJavaScriptファイルをフォーマット
+    eslint --fix "$file"
 
-    cat "$file" >> python_files.md         # ファイルの内容を追加
-    echo '```' >> python_files.md          # シンタックスハイライトの終了を追加
+    cat "$file" >> nodjs_files.md         # ファイルの内容を追加
+    echo '```' >> nodjs_files.md          # シンタックスハイライトの終了を追加
 done
 
-echo 'このアプリケーションを100点満点で採点し、特に改善すべき部分を修正したコードを示してください。' >> python_files.md
+echo 'このアプリケーションを100点満点で採点し、特に改善すべき部分を修正したコードを示してください。' >> nodjs_files.md

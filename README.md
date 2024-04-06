@@ -6,5 +6,11 @@
 ## nodejs
 - nodejs@18.20.1
 - discord.js@14.14.1
-
 .envのDISCORD_TOKENをトークンに使う
+
+```
+rm -rf node_modules/
+npm init
+npm install discord.js dotenv @discordjs/voice
+npx eslint --init
+```
