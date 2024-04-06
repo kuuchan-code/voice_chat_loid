@@ -14,3 +14,8 @@ npm init
 npm install discord.js dotenv @discordjs/voice
 npx eslint --init
 ```
+
+## cpp
+```
+g++ -o audio_query audio_query.cpp -lcpp-httplib -ldpp
+```
