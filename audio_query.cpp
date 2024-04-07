@@ -38,11 +38,15 @@ int main()
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
         res = curl_easy_perform(curl);
-            if (res != CURLE_OK) {
-        std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
-    } else {
-        std::cout << "First Response:\n" << readBuffer << std::endl;
-    }
+        if (res != CURLE_OK)
+        {
+            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+        }
+        else
+        {
+            std::cout << "First Response:\n"
+                      << readBuffer << std::endl;
+        }
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
     }
@@ -63,20 +67,24 @@ int main()
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
         res = curl_easy_perform(curl);
-    if (res != CURLE_OK) {
-        std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
-    } else {
-        // バイナリデータのサイズを出力
-        std::cout << "Second Response: Data size = " << readBuffer.size() << " bytes" << std::endl;
-
-        // 必要であれば、バイナリデータの一部を確認
-        // 例：最初の10バイトを16進数で表示
-        std::cout << "Data sample: ";
-        for (size_t i = 0; i < 10 && i < readBuffer.size(); ++i) {
-            std::cout << std::hex << static_cast<int>(readBuffer[i]) << " ";
+        if (res != CURLE_OK)
+        {
+            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
         }
-        std::cout << std::endl;
-    }
+        else
+        {
+            // バイナリデータのサイズを出力
+            std::cout << "Second Response: Data size = " << readBuffer.size() << " bytes" << std::endl;
+
+            // 必要であれば、バイナリデータの一部を確認
+            // 例：最初の10バイトを16進数で表示
+            std::cout << "Data sample: ";
+            for (size_t i = 0; i < 10 && i < readBuffer.size(); ++i)
+            {
+                std::cout << std::hex << static_cast<int>(readBuffer[i]) << " ";
+            }
+            std::cout << std::endl;
+        }
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
     }
