@@ -59,13 +59,13 @@ int main() {
   dpp::cluster bot(token, dpp::i_default_intents | dpp::i_message_content);
 
   bot.on_log(dpp::utility::cout_logger());
-  dpp::snowflake joined_channel_id;
+  std::map<dpp::snowflake, dpp::snowflake> joined_channel_ids;
   /* The event is fired when someone issues your commands */
   bot.on_slashcommand([&bot,
-                       &joined_channel_id](const dpp::slashcommand_t &event) {
+                       &joined_channel_ids](const dpp::slashcommand_t &event) {
     /* Check which command they ran */
     if (event.command.get_command_name() == "join") {
-      joined_channel_id = event.command.channel_id;
+      joined_channel_ids[event.command.guild_id] = event.command.channel_id;
       /* Get the guild */
       dpp::guild *g = dpp::find_guild(event.command.guild_id);
 
@@ -244,14 +244,20 @@ int main() {
     }
   });
   bot.on_message_create(
-      [&bot, &joined_channel_id](const dpp::message_create_t &event) {
-        if (event.msg.channel_id == joined_channel_id) {
+      [&bot, &joined_channel_ids](const dpp::message_create_t &event) {
+        // ギルドIDを取得
+        dpp::snowflake guild_id = event.msg.guild_id;
+
+        // マップから該当するテキストチャンネルIDを取得
+        if (joined_channel_ids.find(guild_id) != joined_channel_ids.end() &&
+            event.msg.channel_id == joined_channel_ids[guild_id]) {
           // チャンネルに新しいメッセージが投稿された場合の処理
           std::cout << "New message in joined channel: " << event.msg.content
                     << std::endl;
           // ここで必要な処理を実行
         }
       });
+
   bot.on_ready([&bot](const dpp::ready_t &event) {
     if (dpp::run_once<struct register_bot_commands>()) {
       /* Create a new command. */
