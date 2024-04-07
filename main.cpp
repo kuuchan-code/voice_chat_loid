@@ -54,9 +54,9 @@ std::vector<char> extractPCM(const std::string &wavData) {
 
 int main() {
   /* Setup the bot */
-  dpp::cluster bot("MTIyNjA1MjkyODI4NDkyMTg5Nw.GJXBae."
-                   "4fEcoSEqmdKlAVSYHGSlRhdBi2j6nI0rmxkSg4",
-                   dpp::i_default_intents | dpp::i_message_content);
+  // 環境変数または設定ファイルからトークンを読み込む
+  std::string token = std::getenv("DISCORD_BOT_TOKEN");
+  dpp::cluster bot(token, dpp::i_default_intents | dpp::i_message_content);
 
   bot.on_log(dpp::utility::cout_logger());
   dpp::snowflake joined_channel_id;
@@ -165,6 +165,8 @@ int main() {
         }
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
+      } else {
+        std::cerr << "Failed to initialize curl" << std::endl;
       }
       // 2回目のリクエスト
       headers = NULL; // headersをリセット
@@ -212,6 +214,8 @@ int main() {
         }
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
+      } else {
+        std::cerr << "Failed to initialize curl" << std::endl;
       }
 
       curl_global_cleanup();
