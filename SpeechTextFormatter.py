@@ -1,15 +1,11 @@
 import re
-import discord
 import emoji
 import jaconv
 import alkana
 import MeCab
-
+import urllib.parse  # 追加: URLエンコーディング用
 
 class SpeechTextFormatter:
-    USER_MENTION_PATTERN = re.compile(r"<@!?(\d+)>")
-    ROLE_MENTION_PATTERN = re.compile(r"<@&(\d+)>")
-    CHANNEL_PATTERN = re.compile(r"<#(\d+)>")
     CUSTOM_EMOJI_PATTERN = re.compile(r"<:\w+:(\d+)>")
     LAUGH_PATTERN = re.compile(r"\bw+\b|ｗ+")
     ENGLISH_WORD_PATTERN = re.compile(r"\b[a-zA-Z_]+\b")
@@ -23,21 +19,6 @@ class SpeechTextFormatter:
         # MeCabを使用してテキストを単語に分割する
         result = self.mecab.parse(text)
         return result.split()
-
-    def replace_user_mention(self, match, message: discord.Message):
-        user_id = int(match.group(1))
-        user = message.guild.get_member(user_id)
-        return user.display_name if user else match.group(0)
-
-    def replace_role_mention(self, match, message: discord.Message):
-        role_id = int(match.group(1))
-        role = discord.utils.get(message.guild.roles, id=role_id)
-        return role.name if role else match.group(0)
-
-    def replace_channel_mention(self, match, message: discord.Message):
-        channel_id = int(match.group(1))
-        channel = message.guild.get_channel(channel_id)
-        return channel.name if channel else match.group(0)
 
     def replace_custom_emoji_name_to_kana(self, match):
         # 絵文字の名前をキャプチャする
@@ -72,7 +53,7 @@ class SpeechTextFormatter:
     def replace_pattern(self, pattern, text, replace_func):
         return pattern.sub(replace_func, text)
 
-    async def replace_content(self, text, message: discord.Message):
+    async def replace_content(self, text):
         # 英語の単語を特定し、スペースで区切る
         english_words = re.findall(self.ENGLISH_WORD_PATTERN, text)
         for english_word in english_words:
@@ -89,21 +70,12 @@ class SpeechTextFormatter:
         # 処理された単語を結合して完全なテキストに戻す
         text = ''.join(words)
 
-        if message:
-            replace_operations = [
-                (self.USER_MENTION_PATTERN,
-                 lambda m: self.replace_user_mention(m, message)),
-                (self.ROLE_MENTION_PATTERN,
-                 lambda m: self.replace_role_mention(m, message)),
-                (self.CHANNEL_PATTERN,
-                 lambda m: self.replace_channel_mention(m, message)),
-            ]
-            for pattern, func in replace_operations:
-                text = self.replace_pattern(pattern, text, func)
-
         text = self.CUSTOM_EMOJI_PATTERN.sub(
             self.replace_custom_emoji_name_to_kana, text)
         text = self.URL_PATTERN.sub("URL省略", text)
         text = emoji.demojize(text, language="ja")
+
+        # テキストをパーセントエンコーディング
+        text = urllib.parse.quote(text)
 
         return text
