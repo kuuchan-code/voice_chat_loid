@@ -1,5 +1,27 @@
 # VoiceChatLoid
-python
+
+## プロジェクト概要
+
+VoiceChatLoidは、Discordのボイスチャットでテキストメッセージをリアルタイムに音声合成して読み上げるためのBotです。VOICEVOXエンジンと連携し、様々なキャラクターの声でメッセージを読み上げることができます。
+
+## 主な機能
+
+- テキストメッセージの音声合成読み上げ: ボイスチャンネルに参加しているユーザーのテキストメッセージを音声合成して再生します。
+- 多チャンネル対応: 複数のボイスチャンネルで同時に利用可能です。
+- 話者設定: ユーザーごと、またはサーバー全体で読み上げに使用するVOICEVOXのキャラクター（話者）を設定できます。
+- 読み上げ辞書登録: 特定の単語やフレーズの読み方をカスタマイズできます。
+- コマンドによる操作:
+    - Botをボイスチャンネルに参加させる (`/join`)
+    - Botをボイスチャンネルから退出させる (`/leave`)
+    - 現在の読み上げ設定情報を表示する (`/info`)
+    - 読み上げ設定を変更する (`/settings`)
+    - 現在読み上げ中のメッセージをスキップする (`/skip`)
+    - ヘルプメッセージを表示する (`/help`)
+    - 追加の読み上げ対象チャンネルを設定する (`/add_channel`)
+
+## セットアップ
+
+### Python環境設定
 
 - `sudo apt-get install mecab mecab-ipadic mecab-ipadic-utf8 libmecab-dev`
 - `pip install -r requirements.txt`
@@ -73,6 +95,7 @@ $ 7z x voicevox_engine-linux-cpu-0.18.1.7z.001 -o$HOME/voicevox_engine
 $ ~/voicevox_engine/linux-cpu/run
 ```
 
+<!--
 songbirdでwavの再生ができない。
 再生できないと思っていたのはDiscordの出力先を間違えていたから。
 以下のライブラリが必要か？結論、不要だった。
@@ -87,3 +110,4 @@ sudo apt install libopus-dev
 [dependencies.symphonia]
 version = "0.5.2"
 ```
+-->
