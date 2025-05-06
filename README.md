@@ -21,12 +21,7 @@ VoiceChatLoidは、Discordのボイスチャットでテキストメッセージ
 
 ## セットアップ
 
-### Python環境設定
-
-- `sudo apt-get install mecab mecab-ipadic mecab-ipadic-utf8 libmecab-dev`
-- `pip install -r requirements.txt`
-
-rust
+### Rust環境設定
 
 - [Rustのインストールはこちら](https://www.rust-lang.org/tools/install)
 - `sudo apt-get install pkg-config libssl-dev`
